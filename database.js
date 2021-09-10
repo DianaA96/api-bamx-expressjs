@@ -3,9 +3,9 @@ const {Sequelize} = require('sequelize');
 const DonorModel = require('./models/donor');
 
 const DB = new Sequelize(
-    'PRUEBA',
-    'admin',
-    'rootroot',
+    process.env.DB,
+    process.env.DB_USER,
+    process.env.DB_PASS,
     {
         dialect: 'mysql',
         host: process.env.DB_HOST,
