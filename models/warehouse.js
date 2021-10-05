@@ -1,34 +1,24 @@
 module.exports=(DB,type) => {
-    return DB.define('donor', {
-        idDonor:{
+    return DB.define('warehouse', {
+        idWarehouse:{
             type: type.INTEGER,
             primaryKey: true,
             autoIncrement: true,
         },
-        idRoute:{
+        idReceiver:{
             type: type.INTEGER,
             foreignKey: true,
-            references:{
-                model: 'route',
-                key: 'idRoute'
+            reference:{
+                model:'receiver',
+                key: 'idReceiver'
             }
         },
         nombre:{
-            type: type.STRING,
-        },
-        determinante: {
-             type: type.STRING,
-             allowNull: false,
-        },
-        tipo:{
-            enum: type.ENUM('Recurrente','Extraordinario','Unico'),
-        },
-        cp:{
             type: type.INTEGER,
             allowNull: false,
         },
-        estado:{
-            type: type.STRING,
+        cp:{
+            type: type.INTEGER,
             allowNull: false,
         },
         municipio:{

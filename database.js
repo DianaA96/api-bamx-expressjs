@@ -2,6 +2,25 @@ require('dotenv').config();
 const {Sequelize} = require('sequelize');
 const DonorModel = require('./models/donor');
 
+//modelos del archivo tablas
+const adminModel = require('./tablas/admin');
+const assignedQuantityModel = require('./tablas/assignedQuantity');
+const assignedWarehouseModel = require('./tablas/assignedWarehouse');
+const categoryModel = require('./tablas/category');
+const collectedModel = require('./tablas/collected');
+const collectedQuantityModel = require('./tablas/collectedQuantity');
+const collectionModel = require('./tablas/collection');
+const coordinatorModel = require('./tablas/coordinator');
+const deliveredQuantityModel = require('./tablas/deliveredQuantity');
+const deliveriesModel = require('./tablas/deliveries');
+const donorModel = require('./tablas/donor');
+const driverModel = require('./tablas/driver');
+const receiverModel = require('./tablas/receiver');
+const routeModel = require('./tablas/route');
+const usersModel = require('./tablas/user');
+const vehicleModel = require('./tablas/vehicle');
+const warehouseModel = require('./tablas/warehouse')
+
 const DB = new Sequelize(
     process.env.DB,
     process.env.DB_USER,
@@ -18,7 +37,24 @@ const DB = new Sequelize(
 );
 
 //models
-const Donor = DonorModel(DB, Sequelize);
+const admin = adminModel(DB,Sequelize);
+const assignedQuantity = assignedQuantityModel(DB,Sequelize);
+const assignedWarehouse = assignedWarehouseModel(DB,Sequelize);
+const category = categoryModel(DB,Sequelize);
+const collected = collectedModel(DB,Sequelize);
+const collectedQuantity = collectedQuantityModel (DB,Sequelize);
+const collection = collectionModel(DB,Sequelize);
+const coordinator = coordinatorModel(DB,Sequelize);
+const deliveredQuantity = deliveredQuantityModel(DB,Sequelize);
+const deliveries = deliveriesModel(DB,Sequelize);
+const donor = donorModel(DB,Sequelize);
+const driver = driverModel(DB,Sequelize);
+const receiver = receiverModel(DB,Sequelize);
+const route = routeModel(DB,Sequelize);
+const users = usersModel(DB,Sequelize);
+const vehicle = vehicleModel(DB,Sequelize);
+const warehouse = warehouseModel(DB,Sequelize);
+
 
 DB.authenticate()
 .then( () => {
@@ -36,5 +72,22 @@ DB.sync().then(() => {
 
 
 module.exports={
-    Donor,
+    admin,
+    assignedQuantity,
+    assignedWarehouse,
+    category,
+    collected,
+    collectedQuantity,
+    collection,
+    coordinator,
+    deliveredQuantity,
+    deliveries,
+    donor,
+    driver,
+    receiver,
+    route,
+    users,
+    vehicle,
+    warehouse,
+    DB
 }

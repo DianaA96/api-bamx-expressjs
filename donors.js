@@ -9,10 +9,10 @@ router.get('/',(req, res, next)=>{
     })
         .then((allDonors)=>{
             return res.status(200).json({
-                data: allDonors
-            });
-        })
-        .catch((err)=>next(err))
+            data: allDonors
+        });
+    })
+    .catch((err)=>next(err))
 })
 
 module.exports = router
