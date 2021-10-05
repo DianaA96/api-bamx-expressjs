@@ -17,8 +17,8 @@ module.exports=(DB,type) => {
             type: type.INTEGER,
             foreignKey: true,
             references:{
-                model:'assignedWarehouses',
-                key: 'idAssignedWarehouse'
+                model:'warehousesAssignations',
+                key: 'idwarehousesAssignation'
             }
         }
     },{

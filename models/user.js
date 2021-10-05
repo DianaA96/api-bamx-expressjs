@@ -5,8 +5,8 @@ module.exports=(DB,type) => {
             primaryKey: true,
             autoIncrement: true,
         },
-        user: {
-             type: type.STRING,
+        nombreUsuario: {
+            type: type.STRING,
         },
         contrasena: {
              type: type.STRING,

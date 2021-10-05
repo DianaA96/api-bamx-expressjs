@@ -1,5 +1,5 @@
 module.exports=(DB,type) => {
-    return DB.define('category', {
+    return DB.define('categories', {
         idCategory:{
             type: type.INTEGER,
             primaryKey: true,
