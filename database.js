@@ -4,9 +4,8 @@ const {Sequelize} = require('sequelize');
 //modelos del archivo tablas
 const adminModel = require('./tablas/admin');
 const assignedQuantityModel = require('./tablas/assignedQuantity');
-const assignedWarehouseModel = require('./tablas/assignedWarehouse');
+const warehousesAssignation = require('./tablas/warehousesAssignation');
 const categoryModel = require('./tablas/category');
-const collectedModel = require('./tablas/collected');
 const collectedQuantityModel = require('./tablas/collectedQuantity');
 const collectionModel = require('./tablas/collection');
 const coordinatorModel = require('./tablas/coordinator');
@@ -16,7 +15,7 @@ const donorModel = require('./tablas/donor');
 const driverModel = require('./tablas/driver');
 const receiverModel = require('./tablas/receiver');
 const routeModel = require('./tablas/route');
-const usersModel = require('./tablas/user');
+const userModel = require('./tablas/user');
 const vehicleModel = require('./tablas/vehicle');
 const warehouseModel = require('./tablas/warehouse')
 
@@ -38,9 +37,8 @@ const DB = new Sequelize(
 //models
 const admin = adminModel(DB,Sequelize);
 const assignedQuantity = assignedQuantityModel(DB,Sequelize);
-const assignedWarehouse = assignedWarehouseModel(DB,Sequelize);
+const warehousesAssignation = warehousesAssignationModel(DB,Sequelize);
 const category = categoryModel(DB,Sequelize);
-const collected = collectedModel(DB,Sequelize);
 const collectedQuantity = collectedQuantityModel (DB,Sequelize);
 const collection = collectionModel(DB,Sequelize);
 const coordinator = coordinatorModel(DB,Sequelize);
@@ -50,7 +48,7 @@ const donor = donorModel(DB,Sequelize);
 const driver = driverModel(DB,Sequelize);
 const receiver = receiverModel(DB,Sequelize);
 const route = routeModel(DB,Sequelize);
-const users = usersModel(DB,Sequelize);
+const user = userModel(DB,Sequelize);
 const vehicle = vehicleModel(DB,Sequelize);
 const warehouse = warehouseModel(DB,Sequelize);
 
@@ -73,9 +71,8 @@ DB.sync().then(() => {
 module.exports={
     admin,
     assignedQuantity,
-    assignedWarehouse,
+    warehousesAssignation,
     category,
-    collected,
     collectedQuantity,
     collection,
     coordinator,
@@ -85,7 +82,7 @@ module.exports={
     driver,
     receiver,
     route,
-    users,
+    user,
     vehicle,
     warehouse,
     DB

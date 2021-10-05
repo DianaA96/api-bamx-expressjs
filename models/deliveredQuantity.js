@@ -4,7 +4,7 @@ module.exports=(DB,type) => {
             type: type.INTEGER,
             primaryKey: true,
             refences:{
-                model: 'deliveries',
+                model: 'deliverys',
                 key: 'idDelivery'
             }
         },
@@ -12,7 +12,7 @@ module.exports=(DB,type) => {
             type: type.INTEGER,
             primaryKey: true,
             refences:{
-                model: 'category',
+                model: 'categorys',
                 key: 'idCategory'
             }
         },

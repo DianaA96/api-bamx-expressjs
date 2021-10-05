@@ -5,7 +5,7 @@ module.exports=(DB,type) => {
             primaryKey: true,
             foreignKey: true,
             references:{
-                model: 'user',
+                model: 'users',
                 key: 'idUser'
             }
         },        

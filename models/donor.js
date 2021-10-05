@@ -9,7 +9,7 @@ module.exports=(DB,type) => {
             type: type.INTEGER,
             foreignKey: true,
             references:{
-                model: 'route',
+                model: 'routes',
                 key: 'idRoute'
             }
         },

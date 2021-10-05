@@ -1,11 +1,11 @@
 module.exports=(DB,type) => {
-    return DB.define('coordinator', {
-        idDriver: {
+    return DB.define('trafficCoordinator', {
+        idTrafficCoordinator: {
              type: type.INTEGER,
              primaryKey: true,
              foreignKey: true,
              references: {
-                 model:'user',
+                 model:'users',
                  key: 'idUser'
              }
         }

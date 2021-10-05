@@ -5,7 +5,7 @@ module.exports=(DB,type) => {
             primaryKey: true,
             foreignKey: true,
             references:{
-                model: 'collection',
+                model: 'collections',
                 key: 'idCollection'
             }
         },
@@ -14,7 +14,7 @@ module.exports=(DB,type) => {
             primaryKey: true,
             foreignKey: true,
             references:{
-                model: 'category',
+                model: 'categorys',
                 key: 'idCategory'
             }
         },

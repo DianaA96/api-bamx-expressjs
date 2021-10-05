@@ -1,6 +1,6 @@
 module.exports=(DB,type) => {
-    return DB.define('assignedWarehouse', {
-        idAssignedWarehouse:{
+    return DB.define('warehousesAssignation', {
+        idWarehousesAssignation:{
             type: type.INTEGER,
             primaryKey: true,
             autoIncrement: true,
@@ -9,7 +9,7 @@ module.exports=(DB,type) => {
             type: type.INTEGER,
             foreignKey: true,
             reference:{
-                model: 'driver',
+                model: 'drivers',
                 key: 'idDriver'
             }
         },
@@ -17,7 +17,7 @@ module.exports=(DB,type) => {
             type: type.INTEGER,
             foreignKey: true,
             reference:{
-                model: 'warehouse',
+                model: 'warehouses',
                 key: 'idWarehouse'
             }
         },

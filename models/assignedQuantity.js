@@ -1,12 +1,12 @@
 module.exports=(DB,type) => {
     return DB.define('assignedQuantity', {
-        idAssignedWarehouse:{
+        idAssignedQuantity:{
             type: type.INTEGER,
             primaryKey: true,
             foreignKey: true,
             reference:{
-                model: 'assignedWarehouse',
-                key: 'idAssignedWarehouse'
+                model: 'warehousesAssignations',
+                key: 'idWarehousesAssignation'
             }
         },
         idCategory:{
@@ -14,7 +14,7 @@ module.exports=(DB,type) => {
             primaryKey: true,
             foreignKey: true,
             reference:{
-                model: 'category',
+                model: 'categorys',
                 key: 'idCategory'
             }
         },
