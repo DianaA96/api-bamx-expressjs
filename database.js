@@ -5,13 +5,13 @@ const {Sequelize} = require('sequelize');
 const adminModel = require('./tablas/admin');
 const assignedQuantityModel = require('./tablas/assignedQuantity');
 const assignedWarehouseModel = require('./tablas/assignedWarehouse');
-const categorieModel = require('./tablas/categorie');
+const categoryModel = require('./tablas/category');
 const collectedModel = require('./tablas/collected');
 const collectedQuantityModel = require('./tablas/collectedQuantity');
 const collectionModel = require('./tablas/collection');
 const coordinatorModel = require('./tablas/coordinator');
 const deliveredQuantityModel = require('./tablas/deliveredQuantity');
-const deliverieModel = require('./tablas/deliverie');
+const deliveryModel = require('./tablas/delivery');
 const donorModel = require('./tablas/donor');
 const driverModel = require('./tablas/driver');
 const receiverModel = require('./tablas/receiver');
@@ -39,13 +39,13 @@ const DB = new Sequelize(
 const admin = adminModel(DB,Sequelize);
 const assignedQuantity = assignedQuantityModel(DB,Sequelize);
 const assignedWarehouse = assignedWarehouseModel(DB,Sequelize);
-const categorie = categorieModel(DB,Sequelize);
+const category = categoryModel(DB,Sequelize);
 const collected = collectedModel(DB,Sequelize);
 const collectedQuantity = collectedQuantityModel (DB,Sequelize);
 const collection = collectionModel(DB,Sequelize);
 const coordinator = coordinatorModel(DB,Sequelize);
 const deliveredQuantity = deliveredQuantityModel(DB,Sequelize);
-const deliverie = deliverieModel(DB,Sequelize);
+const delivery = deliveryModel(DB,Sequelize);
 const donor = donorModel(DB,Sequelize);
 const driver = driverModel(DB,Sequelize);
 const receiver = receiverModel(DB,Sequelize);
@@ -74,13 +74,13 @@ module.exports={
     admin,
     assignedQuantity,
     assignedWarehouse,
-    categorie,
+    category,
     collected,
     collectedQuantity,
     collection,
     coordinator,
     deliveredQuantity,
-    deliverie,
+    delivery,
     donor,
     driver,
     receiver,
