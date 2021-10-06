@@ -46,7 +46,11 @@ module.exports=(DB,type) => {
         numExterior:{
             type: type.INTEGER,
             allowNull: false
-        }
+        },
+        contacto: {
+            type: type.STRING,
+            allowNull: false
+        },
     },{
         paranoid:true
     }

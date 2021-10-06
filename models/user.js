@@ -3,10 +3,10 @@ module.exports=(DB,type) => {
         idUser:{
             type: type.INTEGER,
             primaryKey: true,
-            autoIncrement: true,
+            autoIncrement: true
         },
         nombreUsuario: {
-            type: type.STRING,
+            type: type.STRING
         },
         contrasena: {
              type: type.STRING,
@@ -35,7 +35,7 @@ module.exports=(DB,type) => {
          },
         apellidoM:{
             type: type.STRING,
-         },
+         }
     },{
         paranoid:true
      }
