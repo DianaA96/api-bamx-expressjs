@@ -34,7 +34,12 @@ router.get('/', async (req, res, next) => {
 //obtiene a los receptores
 router.get('/receivers', async (req, res, next) => {
     DB.query(
-        `SELECT * FROM receivers`,
+        `select
+        nombreUsuario,nombre,apellidoM,apellidoP,idReceiver
+        from
+        users u left join drivers o on u.idUser=o.idDriver
+        left join receivers r on r.idReceiver=u.idUser
+        left join trafficCoordinators t on u.idUser=t.idTrafficCoordinator;`,
         { type: QueryTypes.SELECT})
     .then((listaReceptores) => {
         return res.status(200).json({
@@ -50,7 +55,12 @@ router.get('/receivers', async (req, res, next) => {
 //obtiene a los coordinadores
 router.get('/trafficCoordinators', async (req, res, next) => {
     DB.query(
-        `SELECT * FROM trafficCoordinators`,
+        `select
+        nombre,apellidoM,apellidoP,idDriver,idReceiver,idTrafficCoordinator
+        from
+        users u left join drivers o on u.idUser=o.idDriver
+        left join receivers r on r.idReceiver=u.idUser
+        left join trafficCoordinators t on u.idUser=t.idTrafficCoordinator;`,
         { type: QueryTypes.SELECT})
     .then((listaCoordinadores) => {
         return res.status(200).json({
@@ -134,6 +144,7 @@ router.post('/trafficCoordinators/', async (req, res, next) => {
     }
 )
 
+//CORREGIR POST de usuarios
 //endpoint para crear OPERADORES 
 router.post('/drivers/', async (req, res, next) => {
     
