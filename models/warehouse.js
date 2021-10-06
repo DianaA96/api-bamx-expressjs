@@ -1,34 +1,24 @@
 module.exports=(DB,type) => {
-    return DB.define('donor', {
-        idDonor:{
+    return DB.define('warehouse', {
+        idWarehouse:{
             type: type.INTEGER,
             primaryKey: true,
             autoIncrement: true,
         },
-        nombre:{
-            type: type.STRING,
-        },
-        determinante: {
-            type: type.STRING,
-            allowNull: false,
-        },
-        tipo:{
-            type: type.ENUM('Recurrente','Extraordinario','Unico'),
-        },
-        idRoute:{
+        idReceiver:{
             type: type.INTEGER,
             foreignKey: true,
-            references:{
-                model: 'routes',
-                key: 'idRoute'
+            reference:{
+                model:'receivers',
+                key: 'idReceiver'
             }
+        },
+        nombre:{
+            type: type.INTEGER,
+            allowNull: false,
         },
         cp:{
             type: type.INTEGER,
-            allowNull: false,
-        },
-        estado:{
-            type: type.STRING,
             allowNull: false,
         },
         municipio:{
@@ -46,11 +36,7 @@ module.exports=(DB,type) => {
         numExterior:{
             type: type.INTEGER,
             allowNull: false
-        },
-        contacto: {
-            type: type.STRING,
-            allowNull: false
-        },
+        }
     },{
         paranoid:true
     }
