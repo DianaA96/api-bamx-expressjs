@@ -1,10 +1,11 @@
 const express = require('express');
 const router = express.Router();
+const chalk = require('chalk');
 const {QueryTypes} = require('sequelize');
 const {Route,Donor} = require('./database');
 
 // Destructuramos los modelos requeridos en las consultas que incluyen raw queries de SQL
-const { DB }  = require('./database')
+const { DB }  = require('./database');
 
 //obtiene todas las rutas
 router.get('/', async (req, res, next) => {
@@ -59,7 +60,6 @@ router.get('/:idRoute', async (req, res, next) => {
 router.post('/donors/', async (req, res, next) => {
     console.log(req.body)
     const {route}=req.body
-    const {donors} =req.body
     try {
         let nombrer = await Route.findOne({
             where: {nombre: route.nombre}
@@ -71,24 +71,26 @@ router.post('/donors/', async (req, res, next) => {
         }
         let ruta= await Route.create({ 
             idRoute: route.idRoute,
-            nombre: Route.nombre,
-            })
-        let Routee = await Route.findOne({
-            where: {nombre: route.nombre}
+            nombre: route.nombre
         })
-        let prueba = donors
-        let idRoutea = Routee.idRoute
-        console.log(prueba);
-        prueba.map( async (donor,i)=>{
-            let donador= await Donor.findByPk(donor.idDonor)
-            donador.update({idRoute: idRoutea})
+        //pr es lo que le puse en el POSTMAN 
+        let ids = route.pr
+        ids.map(async (x,i)=>{
+            //console.log(chalk.greenBright(route.pr[i]))
+            await Donor.findByPk(route.pr[i]).then((y)=>{
+                let x =y.idDonor //x es el resultado de buscarlo
+            })
+            let f =await Donor.update({idRoute: ruta.idRoute}, {where:{idDonor: Donor.idDonor=x}} ).then((w)=>{
+                //console.log(chalk.red(x)) 
+               // console.log(chalk.blue(Donor.idRoute, Donor.idDonor=x)) namas pa revisar k si tenga datos
+            })
         })
         return res.status(201).json({ruta})
 
     } catch(err) 
-        {
-            next(err);
-        }
+    {
+        next(err);
+    }
     }
 )
 
