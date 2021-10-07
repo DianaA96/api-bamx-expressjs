@@ -1,42 +1,88 @@
 const express = require('express');
 const router = express.Router();
 const {QueryTypes} = require('sequelize');
-const {Routes} = require('./database');
+const {Route,Donor} = require('./database');
 
 // Destructuramos los modelos requeridos en las consultas que incluyen raw queries de SQL
 const { DB }  = require('./database')
 
 //obtiene todo los usuarios
 router.get('/', async (req, res, next) => {
-    DB.query(
-        `SELECT * FROM routes`,
-        { type: QueryTypes.SELECT})
-    .then((collection) => {
+     DB.query(
+        `select
+        nombre,apellidoM,apellidoP,idDriver,idReceiver,idTrafficCoordinator
+        from users u left join drivers o on u.idUser=o.idDriver
+        left join receivers r on r.idReceiver=u.idUser
+        left join trafficCoordinators t on u.idUser=t.idTrafficCoordinator
+        where u.deletedAt is null`,
+        { 
+           nest:true, 
+           type: QueryTypes.SELECT
+        }
+    )
+    .then((rutas) => {
         return res.status(200).json({
-            collection
+            rutas
         });
     })
     .catch((err) => {
         next(err);
     })
-}
-)
+})
 
-router.post('/donors', async (req, res, next) => {
+//obtener ruta especifica
+router.get('/:idRoute', async (req, res, next) => {
+    const {idRoute} = req.params
+    DB.query(
+        `select
+        r.nombre,d.nombre,calle, numExterior, colonia, cp
+        from
+        routes r left join donors d on r.idRoute=d.idRoute
+        where r.idRoute=:idRoute`,
+       { 
+           replacements:{idRoute: idRoute},
+           nest:true, 
+           type: QueryTypes.SELECT
+       }
+    )
+   .then((rutas) => {
+       return res.status(200).json({
+           rutas
+       });
+   })
+   .catch((err) => {
+       next(err);
+   })
+})
+
+//Crear un donador
+router.post('/donors/', async (req, res, next) => {
     console.log(req.body)
-    const { routes } = req.body
+    const { route, donors} =req.body
     try {
-        let unidad = await Routes.findOne({
-            where: {placa: routes.placa},
-            where: {poliza: routes.poliza}
+        let nombrer = await Route.findOne({
+            where: {nombre: route.nombre}
         })
-        if(unidad){
+        if(nombrer){
             return res.status(400).json({
-                message: "Ya existe una una ruta",
+                message: "Ya existe una una ruta con ese nombre",
             })
         }
-        let carro =  await Vehicle.create(vehicle)
-        return res.status(201).json({carro})
+        let ruta= await Route.create({ 
+            nombre: route.nombre,
+            })
+        let Routee = await Route.findOne({
+            where: {nombre: route.nombre}
+        })
+        let prueba = donors
+        let idRoutea = Routee.idRoute
+        console.log(prueba);
+        prueba.map((donor,i)=>{
+            let donador= await Donor.findByPk(donor.idDonor)
+            donador.update({idRoute: idRoutea})
+        })
+        return res.status(201).json({ruta})
+
     } catch(err) 
     {
         next(err);
@@ -44,57 +90,38 @@ router.post('/donors', async (req, res, next) => {
     }
 )
 
-//patch OERADORES 
-router.patch('/:idUser/operators/', async (req, res, next) => {
 
-    const { idUser } = req.params;
-    const { user, driver } = req.body;
-
+//eliminar ruta
+router.delete('/:idRoute', async (req, res, next)=>{
+    const {idRoute} = req.params;
+    DB.query(`select
+            nombre
+            from
+            Routes
+            where
+            idRoute=:idRoute`,
+        {   
+            replacements: {idRoute: idRoute},
+            type: QueryTypes.SELECT
+        }    
+        )
     try{
-        let usuario = await User.findByPk(idUser)
-        let operador = await Driver.findByPk(idUser)
-    
-        if(usuario && operador) {
-            await usuario.update(user)
-            await operador.update(driver)
-            
-            let {
-                idUser,
-                nombre,
-                apellidoP,
-                apellidoM,
-                nombreUsuario,
-                telefono,
-                email
-            } = usuario
-
-            let {licencia,  vencimientoLic}= operador
-
+        let ruta = await Route.findByPk(idRoute)
+        if(ruta){
+            await ruta.destroy(/*{force: true}*/)
             return res.status(200).json({
-                usuarioActualizado: {
-                    idUser,
-                    nombre,
-                    apellidoP,
-                    apellidoM,
-                    nombreUsuario,
-                    telefono,
-                    email
-                },
-                operadorActualizado:{
-                    licencia,  
-                    vencimientoLic
-                }
+                rutaEliminada: ruta
             })
-        } else {
+        }else{
             return res.status(404).json({
-                name: "Not Found",
-                message: "El operador que intentas actualizar no existe"
-                })
-            }
-        } catch(err) {
-            next(err);
+                name: "Not found",
+                message: "La ruta seleccionada no existe"
+            })
         }
+    }catch(err){
+        next(err);
     }
+}
 )
 
 module.exports = router;

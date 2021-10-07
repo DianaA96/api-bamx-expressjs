@@ -6,7 +6,7 @@ const {DB}  = require('./database')
 
 router.get('/', async (req, res, next) => {
         DB.query(
-            `SELECT * FROM drivers`,
+            `SELECT * FROM drivers where deletedAt is NULL`,
             { type: QueryTypes.SELECT})
         .then((listaOperadores) => {
             return res.status(200).json({

@@ -2,6 +2,7 @@ module.exports=(DB,type) => {
     return DB.define('driver', {
         idDriver: {
              type: type.INTEGER,
+             //autoIncrement:true,
              primaryKey: true,
              foreignKey: true,
              references: {
@@ -11,8 +12,12 @@ module.exports=(DB,type) => {
         },
         licencia: {
             type: type.STRING,
-            vencimientoLicencia: type.DATE,
-        }
+            allowNull: true
+        },
+        vencimientoLicencia: {
+            type: type.DATE,
+            allowNull: true
+        },
     },{
         paranoid:true
      }

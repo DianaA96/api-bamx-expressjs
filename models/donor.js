@@ -47,7 +47,7 @@ module.exports=(DB,type) => {
             type: type.INTEGER,
             allowNull: false
         },
-        contacto: {
+        telefono: {
             type: type.STRING,
             allowNull: false
         },

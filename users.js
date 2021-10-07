@@ -1,6 +1,7 @@
 // Importamos Express, el Router y los modelos necesarios para las queries
 const express = require('express');
 const router = express.Router();
+const chalk =require('chalk');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const {QueryTypes} = require('sequelize');
@@ -14,11 +15,11 @@ const { DB }  = require('./database')
 router.get('/', async (req, res, next) => {
     DB.query(
         `select
-        nombre,apellidoM,apellidoP,idDriver,idReceiver,idTrafficCoordinator
+        idUser,nombre,apellidoM,apellidoP,idDriver,idReceiver,idTrafficCoordinator
         from
         users u left join drivers o on u.idUser=o.idDriver
         left join receivers r on r.idReceiver=u.idUser
-        left join trafficCoordinators t on u.idUser=t.idTrafficCoordinator;`
+        left join trafficCoordinators t on u.idUser=t.idTrafficCoordinator where u.deletedAt is NULL`
         ,{nest:true,type: QueryTypes.SELECT}
     ).then((listaUsuarios) => {
         return res.status(200).json({
@@ -34,7 +35,12 @@ router.get('/', async (req, res, next) => {
 //obtiene a los receptores
 router.get('/receivers', async (req, res, next) => {
     DB.query(
-        `SELECT * FROM receivers`,
+        `select
+        nombreUsuario,nombre,apellidoM,apellidoP,idReceiver
+        from
+        users u left join drivers o on u.idUser=o.idDriver
+        left join receivers r on r.idReceiver=u.idUser
+        left join trafficCoordinators t on u.idUser=t.idTrafficCoordinator where u.deletedAt is NULL`,
         { type: QueryTypes.SELECT})
     .then((listaReceptores) => {
         return res.status(200).json({
@@ -50,7 +56,12 @@ router.get('/receivers', async (req, res, next) => {
 //obtiene a los coordinadores
 router.get('/trafficCoordinators', async (req, res, next) => {
     DB.query(
-        `SELECT * FROM trafficCoordinators`,
+        `select
+        nombre,apellidoM,apellidoP,idDriver,idReceiver,idTrafficCoordinator
+        from
+        users u left join drivers o on u.idUser=o.idDriver
+        left join receivers r on r.idReceiver=u.idUser
+        left join trafficCoordinators t on u.idUser=t.idTrafficCoordinator where u.deletedAt is NULL`,
         { type: QueryTypes.SELECT})
     .then((listaCoordinadores) => {
         return res.status(200).json({
@@ -109,10 +120,13 @@ router.post('/trafficCoordinators/', async (req, res, next) => {
 
         usuario = {...usuarioCoordinador, contrasena: contrasenaNueva}
 
-        await User.create(usuario)
-        await TrafficCoordinator.create({ 
-            idTrafficCoordinator: user.idUser,
+        let a =await User.create(usuario)
+        .then((a)=>{
+            console.log(a)
+            trafficCoordinator.create({ 
+                idReceiver: a.idUser,
             })
+        })   
         let {idTrafficCoordinator, contrasena,nombreUsuairo, nombre, apellidoP, apellidoM, email, telefono} = usuarioCoordinador
         const payload = {
             idUser: usuario.idUser,
@@ -134,10 +148,10 @@ router.post('/trafficCoordinators/', async (req, res, next) => {
     }
 )
 
+//CORREGIR POST de usuarios
 //endpoint para crear OPERADORES 
 router.post('/drivers/', async (req, res, next) => {
     
-    console.log(req.body)
     const { user } = req.body
     const {driver} = req.body
     let usuarioOperador =  user
@@ -161,13 +175,19 @@ router.post('/drivers/', async (req, res, next) => {
         let contrasenaNueva = await bcrypt.hash(usuarioOperador.contrasena, 10)
 
         usuario = {...usuarioOperador, contrasena: contrasenaNueva}
-
-        await User.create(usuario)
-        await Driver.create({ 
-            idDriver: user.idUser,
-            licencia: driver.licencia
+        console.log(driver)
+        let b =""
+        let a =await User.create(usuario)
+        .then((a)=>{
+            console.log(a)
+            Driver.create({ 
+                idDriver: a.idUser,
+                licencia: driver.licencia,
+                vencimientoLicencia: driver.vencimientoLicencia
             })
-        let {idUser,nombreUsuairo, nombre, apellidoP, apellidoM, email, telefono, licencia,vencimientoLic} = usuarioOperador
+            
+        })     
+        let {nombreUsuairo, nombre, apellidoP, apellidoM, email, telefono, licencia,vencimientoLicencia, idDriver} = usuarioOperador
         const payload = {
             idUser: usuario.idUser,
         }
@@ -213,11 +233,15 @@ router.post('/receivers/', async (req, res, next) => {
 
         usuario = {...usuarioReceptor, contrasena: contrasenaNueva}
 
-        await User.create(usuario)
-        await Receiver.create({ 
-            idReceiver: user.idUser,
+        let a =await User.create(usuario)
+        .then((a)=>{
+            console.log(a)
+            Receiver.create({ 
+                idReceiver: a.idUser,
             })
-        let {idReceiver,nombreUsuairo, nombre, apellidoP, apellidoM, email, telefono} = usuarioReceptor
+        })     
+
+        let {nombreUsuairo, nombre, apellidoP, apellidoM, email, telefono} = usuarioReceptor
         const payload = {
             idUser: usuario.idUser,
         }
