@@ -77,7 +77,7 @@ router.post('/donors/', async (req, res, next) => {
         let prueba = donors
         let idRoutea = Routee.idRoute
         console.log(prueba);
-        prueba.map((donor,i)=>{
+        prueba.map( async (donor,i)=>{
             let donador= await Donor.findByPk(donor.idDonor)
             donador.update({idRoute: idRoutea})
         })
