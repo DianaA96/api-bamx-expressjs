@@ -12,7 +12,7 @@ router.get('/', async (req, res, next) => {
         `select
         *
         from 
-        donors`,
+        donors where deletedAt is NULL`,
         { nest:true,type: QueryTypes.SELECT})
     .then((listaDonadores) => {
         return res.status(200).json({
@@ -30,7 +30,7 @@ router.get('/:idDonor', async (req, res, next) => {
     const { idDonor } = req.params;
     DB.query(
         `select
-        idDonor,nombre,cp,estado,colonia,calle,numExterior,telefono
+        *
         from 
         donors
         where

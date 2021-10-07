@@ -10,14 +10,14 @@ const { DB }  = require('./database')
 router.get('/', async (req, res, next) => {
      DB.query(
         `select
-        r.idRoute,r.nombre,count(r.idRoute) as puntosRecoleccion
-        from
-        routes r
-        left join donors d on r.idRoute=d.idRoute
-        group by nombre order by r.nombre asc;`,
+        nombre,apellidoM,apellidoP,idDriver,idReceiver,idTrafficCoordinator
+        from users u left join drivers o on u.idUser=o.idDriver
+        left join receivers r on r.idReceiver=u.idUser
+        left join trafficCoordinators t on u.idUser=t.idTrafficCoordinator
+        where u.deletedAt is null`,
         { 
            nest:true, 
-            type: QueryTypes.SELECT
+           type: QueryTypes.SELECT
         }
     )
     .then((rutas) => {
@@ -55,6 +55,7 @@ router.get('/:idRoute', async (req, res, next) => {
    })
 })
 
+//Crear un donador
 router.post('/donors/', async (req, res, next) => {
     console.log(req.body)
     const { route, donors} =req.body
@@ -74,11 +75,10 @@ router.post('/donors/', async (req, res, next) => {
             where: {nombre: route.nombre}
         })
         let prueba = donors
-        let a
         let idRoutea = Routee.idRoute
         console.log(prueba);
-        a.map((donor,i)=>{
-            let donador= Donor.findByPk(donor.idDonor)
+        prueba.map((donor,i)=>{
+            let donador= await Donor.findByPk(donor.idDonor)
             donador.update({idRoute: idRoutea})
         })
         return res.status(201).json({ruta})
@@ -89,7 +89,6 @@ router.post('/donors/', async (req, res, next) => {
     }
     }
 )
-
 
 
 //eliminar ruta
