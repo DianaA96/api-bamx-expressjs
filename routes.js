@@ -56,7 +56,7 @@ router.get('/:idRoute', async (req, res, next) => {
    })
 })
 
-//Crear un donador
+//Crear una ruta
 router.post('/donors/', async (req, res, next) => {
     console.log(req.body)
     const {route}=req.body
