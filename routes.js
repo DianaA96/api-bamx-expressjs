@@ -6,15 +6,15 @@ const {Route,Donor} = require('./database');
 // Destructuramos los modelos requeridos en las consultas que incluyen raw queries de SQL
 const { DB }  = require('./database')
 
-//obtiene todo los usuarios
+//obtiene todas las rutas
 router.get('/', async (req, res, next) => {
      DB.query(
         `select
-        nombre,apellidoM,apellidoP,idDriver,idReceiver,idTrafficCoordinator
-        from users u left join drivers o on u.idUser=o.idDriver
-        left join receivers r on r.idReceiver=u.idUser
-        left join trafficCoordinators t on u.idUser=t.idTrafficCoordinator
-        where u.deletedAt is null`,
+        *
+        from
+        routes r
+        left join donors d on r.idRoute=d.idRoute
+        group by r.nombre`,
         { 
            nest:true, 
            type: QueryTypes.SELECT
@@ -35,7 +35,7 @@ router.get('/:idRoute', async (req, res, next) => {
     const {idRoute} = req.params
     DB.query(
         `select
-        r.nombre,d.nombre,calle, numExterior, colonia, cp
+        r.idRoute ,r.nombre,d.nombre,calle, numExterior, colonia, cp
         from
         routes r left join donors d on r.idRoute=d.idRoute
         where r.idRoute=:idRoute`,
@@ -58,7 +58,8 @@ router.get('/:idRoute', async (req, res, next) => {
 //Crear un donador
 router.post('/donors/', async (req, res, next) => {
     console.log(req.body)
-    const { route, donors} =req.body
+    const {route}=req.body
+    const {donors} =req.body
     try {
         let nombrer = await Route.findOne({
             where: {nombre: route.nombre}
@@ -69,7 +70,8 @@ router.post('/donors/', async (req, res, next) => {
             })
         }
         let ruta= await Route.create({ 
-            nombre: route.nombre,
+            idRoute: route.idRoute,
+            nombre: Route.nombre,
             })
         let Routee = await Route.findOne({
             where: {nombre: route.nombre}
@@ -84,9 +86,9 @@ router.post('/donors/', async (req, res, next) => {
         return res.status(201).json({ruta})
 
     } catch(err) 
-    {
-        next(err);
-    }
+        {
+            next(err);
+        }
     }
 )
 
