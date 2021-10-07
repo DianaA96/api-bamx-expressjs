@@ -73,20 +73,22 @@ router.post('/donors/', async (req, res, next) => {
             idRoute: route.idRoute,
             nombre: Route.nombre,
             })
-        
-        console.log(ruta.idRoute,"!!!!!!!!!!!!!!");
-        console.log(ruta.nombre,"!!!!!!!!!!!!!!");
-        /*
-        prueba.map((donor,i)=>{
+        let Routee = await Route.findOne({
+            where: {nombre: route.nombre}
+        })
+        let prueba = donors
+        let idRoutea = Routee.idRoute
+        console.log(prueba);
+        prueba.map( async (donor,i)=>{
             let donador= await Donor.findByPk(donor.idDonor)
             donador.update({idRoute: idRoutea})
-        })*/
+        })
         return res.status(201).json({ruta})
 
     } catch(err) 
-    {
-        next(err);
-    }
+        {
+            next(err);
+        }
     }
 )
 
