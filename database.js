@@ -20,6 +20,7 @@ const userModel = require('./models/user');
 const vehicleModel = require('./models/vehicle');
 const warehouseModel = require('./models/warehouse')
 
+//Instanciamos la base de datos
 const DB = new Sequelize(
     process.env.DB,
     process.env.DB_USER,
@@ -35,7 +36,7 @@ const DB = new Sequelize(
     }
 );
 
-//models
+// Models
 const Admin = adminModel(DB,Sequelize);
 const AssignedQuantity = assignedQuantityModel(DB,Sequelize);
 const WarehousesAssignation = warehousesAssignationModel(DB,Sequelize);
@@ -53,7 +54,7 @@ const User = userModel(DB,Sequelize);
 const Vehicle = vehicleModel(DB,Sequelize);
 const Warehouse = warehouseModel(DB,Sequelize);
 
-
+// Se accede a la instancia de la base de datos
 DB.authenticate()
 .then( () => {
     console.log(chalk.cyanBright('Connection has been established successfully.'));
@@ -69,6 +70,7 @@ DB.sync().then(() => {
 }).catch(err => console.error(chalk.redBright(err)))
 
 
+// Se exportan los módulos
 module.exports={
     Admin,
     AssignedQuantity,
