@@ -105,8 +105,6 @@ router.patch('/:idRoute/donors/', async (req, res, next) => {
                 message: "Ya existe una una ruta con ese nombre",
             })
         }
-        console.log(ruta,"+++++++++")
-        console.log()
         if(ruta){
             await ruta.update(route)
             //pr es donors
@@ -117,8 +115,8 @@ router.patch('/:idRoute/donors/', async (req, res, next) => {
                 let x =y.idDonor //x es el resultado de buscarlo
             })
             await Donor.update({idRoute: ruta.idRoute}, {where:{idDonor: Donor.idDonor=x}} )
-        })
-    }
+            })
+        }
         return res.status(201).json({ruta})
     } catch(err) 
     {

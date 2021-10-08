@@ -8,13 +8,19 @@ module.exports=(DB,type) => {
         placa:{
             type: type.STRING,
             allowNull: false,
+            unique:true
         },
         poliza:{
             type: type.INTEGER,
             allowNull: false,
+            unique:true
         },
         vencimientoPoliza:{
             type: type.DATE,
+            allowNull: false,
+        },
+        modelo:{
+            type: type.STRING,
             allowNull: false,
         }
     },{

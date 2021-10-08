@@ -29,8 +29,7 @@ router.get('/', async (req, res, next) => {
     .catch((err) => {
         next(err);
     })
-}
-)
+})
 
 //obtiene a los receptores
 router.get('/receivers', async (req, res, next) => {
@@ -50,8 +49,7 @@ router.get('/receivers', async (req, res, next) => {
     .catch((err) => {
         next(err);
     })
-}
-)
+})
 
 //obtiene a los coordinadores
 router.get('/trafficCoordinators', async (req, res, next) => {
@@ -71,8 +69,7 @@ router.get('/trafficCoordinators', async (req, res, next) => {
     .catch((err) => {
         next(err);
     })
-}
-)
+})
 
 //obtener los datos de un usuaario especifico *falta agregar el puesto
 router.get('/:idUser',async (req, res, next) => {
@@ -97,19 +94,15 @@ router.get('/:idUser',async (req, res, next) => {
 
 //endpoint crear COORDINADORES
 router.post('/trafficCoordinators/', async (req, res, next) => {
-    
     console.log(req.body)
     const { user, trafficCoordinator } = req.body
     let usuarioCoordinador =  user
-    //UsuarioReceptor.puesto = "Receiver"
-    
     try {
         let usuario = await User.findOne({
             where: {telefono: user.telefono},
             where: {email: user.email},
             where: {nombreUsuario: user.nombreUsuario},
         })
-
         if(usuario) {
             return res.status(400).json({
                 message: "Lo sentimos, este coordinador ya existe",
@@ -120,13 +113,13 @@ router.post('/trafficCoordinators/', async (req, res, next) => {
 
         usuario = {...usuarioCoordinador, contrasena: contrasenaNueva}
 
-        let a =await User.create(usuario)
+        let x = await User.create(usuario)
         .then((a)=>{
-            console.log(a)
-            trafficCoordinator.create({ 
-                idReceiver: a.idUser,
+            TrafficCoordinator.create({
+                idTrafficCoordinator: a.idUser,
             })
         })   
+        
         let {idTrafficCoordinator, contrasena,nombreUsuairo, nombre, apellidoP, apellidoM, email, telefono} = usuarioCoordinador
         const payload = {
             idUser: usuario.idUser,
