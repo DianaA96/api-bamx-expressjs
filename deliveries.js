@@ -6,12 +6,10 @@ const {Delivery, Warehouse} = require('./database');
 const {DB}  = require('./database')
 
 //lista de entregas
-router.get('/', async (req, res, next) => {
+router.get('/a', async (req, res, next) => {
     const { idReceiver } = req.params
     let fechaDeHoy = new Date().toJSON()
-    
     DB.query(
-        
         `select u.nombre,w.nombre,u2.nombre,u2.apellidoP,placa,cantidad
         from
         users u join receivers r on u.idUser=r.idReceiver
@@ -21,22 +19,22 @@ router.get('/', async (req, res, next) => {
         join drivers o on o.idDriver= wa.idWarehousesAssignation
         join users u2 on u2.idUser=o.idDriver
         join collections c on c.idCollection=o.idDriver
-        join vehicles on vehicles.idVehicle=c.idCollection
-        where
-        fecha="${fechaDeHoy}" and idReceiver=:idReceiver`,
+        join vehicles on vehicles.idVehicle=c.idCollection`
+        //where
+       // fecha="${fechaDeHoy}" and idReceiver=:idReceiver`
+       ,
         { 
             eplacements: {idReceiver: idReceiver},
-            nest:true,
             type: QueryTypes.SELECT
         }
-    )
-    .then((entregas) => {
-        return res.status(200).json({
-            entregas
-        });
-    })
-    .catch((err) => {
-        next(err);
-    })
-}
+        ).then((entregas) => {
+            return res.status(200).json({
+                entregas
+            });
+        }).catch((err) => {
+            next(err);
+        })
+    }
 )
+
+module.exports = router

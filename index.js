@@ -7,19 +7,21 @@ const app = express();
 const port = 5000;
 
 const users = require('./users');
+const routes = require('./routes');
 const donors = require('./donors');
 const drivers = require('./drivers');
 const vehicles = require('./vehicles');
-const routes = require('./routes');
+const deliveries = require('./deliveries');
 
 app.use (bodyParser.json());
 app.use(cors());
 
 app.use('/users', users);
-app.use('/donors', donors);
 app.use('/routes', routes);
+app.use('/donors', donors);
 app.use('/drivers', drivers);
 app.use('/vehicles', vehicles);
+app.use('/deliveries',deliveries);
  
 // Destructuramos los modelos requeridos en las consultas que incluyen raw queries de SQL
 const { DB, Refer }  = require('./database')
