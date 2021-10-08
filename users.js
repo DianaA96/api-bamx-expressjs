@@ -148,7 +148,6 @@ router.post('/trafficCoordinators/', async (req, res, next) => {
     }
 )
 
-//CORREGIR POST de usuarios
 //endpoint para crear OPERADORES 
 router.post('/drivers/', async (req, res, next) => {
     
@@ -262,7 +261,7 @@ router.post('/receivers/', async (req, res, next) => {
     }
 )
 
-//patch OERADORES 
+//patch OERADORES **cambiar a drivers**
 router.patch('/:idUser/operators/', async (req, res, next) => {
 
     const { idUser } = req.params;

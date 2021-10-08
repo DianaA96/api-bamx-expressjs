@@ -11,11 +11,11 @@ const { DB }  = require('./database');
 router.get('/', async (req, res, next) => {
      DB.query(
         `select
-        *
+        r.nombre,count(r.idRoute) as puntosRecoleccion
         from
         routes r
         left join donors d on r.idRoute=d.idRoute
-        group by r.nombre`,
+        group by nombre order by r.createdAt desc;`,
         { 
            nest:true, 
            type: QueryTypes.SELECT
@@ -70,7 +70,6 @@ router.post('/donors/', async (req, res, next) => {
             })
         }
         let ruta= await Route.create({ 
-            idRoute: route.idRoute,
             nombre: route.nombre
         })
         //pr es lo que le puse en el POSTMAN 
@@ -80,10 +79,7 @@ router.post('/donors/', async (req, res, next) => {
             await Donor.findByPk(route.pr[i]).then((y)=>{
                 let x =y.idDonor //x es el resultado de buscarlo
             })
-            let f =await Donor.update({idRoute: ruta.idRoute}, {where:{idDonor: Donor.idDonor=x}} ).then((w)=>{
-                //console.log(chalk.red(x)) 
-               // console.log(chalk.blue(Donor.idRoute, Donor.idDonor=x)) namas pa revisar k si tenga datos
-            })
+            await Donor.update({idRoute: ruta.idRoute}, {where:{idDonor: Donor.idDonor=x}} )
         })
         return res.status(201).json({ruta})
 
@@ -94,6 +90,36 @@ router.post('/donors/', async (req, res, next) => {
     }
 )
 
+//Actualiza una ruta
+router.patch('/:idRoute/donors/', async (req, res, next) => {
+    console.log(req.body)
+    const {idRoute, idDonor}= req.params
+    const {route}=req.body
+
+    try {
+        let ruta = await Route.findByPk(idRoute)
+        let donador = await Donor.findOne()
+        console.log(ruta,"+++++++++")
+        console.log()
+        if(ruta){
+            await ruta.update(route)
+            //pr es donors
+            let ids = route.pr
+            ids.map(async (x,i)=>{
+            //console.log(chalk.greenBright(route.pr[i]))
+            await Donor.findByPk(route.pr[i]).then((y)=>{
+                let x =y.idDonor //x es el resultado de buscarlo
+            })
+            await Donor.update({idRoute: ruta.idRoute}, {where:{idDonor: Donor.idDonor=x}} )
+        })
+    }
+        return res.status(201).json({ruta})
+    } catch(err) 
+    {
+        next(err);
+    }
+    }
+)
 
 //eliminar ruta
 router.delete('/:idRoute', async (req, res, next)=>{
