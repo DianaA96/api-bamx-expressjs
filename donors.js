@@ -1,8 +1,8 @@
 const express = require('express');
 const router = express.Router()
 const {QueryTypes} = require('sequelize');
-const {Donor} =require('./database');
-const {Route} = require('./database');
+const {Donor, CollectedQuantity} =require('./database');
+const {Collection} = require('./database');
 // Destructuramos los modelos requeridos en las consultas que incluyen raw queries de SQL
 const {DB}  = require('./database')
 
@@ -150,6 +150,47 @@ router.patch('/:idDonor', async (req, res, next) => {
     }
 )
 
+// Formulario registro recolección (modal) 
+router.patch('/collected/collections', async(req, res, next) => {
+    
+    const { thisCollection: idCollection } = req.query
+    const { collected } = req.body
+    console.log(collected)
 
+    try {
+        let recoleccion = await Collection.findByPk(idCollection)
+        
+        if(recoleccion) {
+            await recoleccion.update(req.body.body)
+            console.log(recoleccion);
+            if(collected.rec1){
+                await CollectedQuantity.create(rec1)
+            }
+            if(collected.rec2){
+                await CollectedQuantity.create(rec2)
+            }
+            if(collected.rec3){
+                await CollectedQuantity.create(rec3)
+            }
+            if(collected.rec4){
+                await CollectedQuantity.create(rec4)
+            }
+            return res.status(200).json({
+                recoleccionActualizada: recoleccion,
+                cantidad1: collected.rec1,
+                cantidad2: collected.rec2,
+                cantidad3: collected.rec3,
+                cantidad4: collected.rec4
+            })
+        } else {
+            return res.status(404).json({
+                name: "Not Found",
+                message: "La recolección que intentas modificar no se ha creado aún :("
+            })
+        }
+    } catch(err) {
+        next(err);
+    }
+})
 
 module.exports = router
