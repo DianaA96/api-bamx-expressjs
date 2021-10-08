@@ -74,19 +74,22 @@ router.get('/trafficCoordinators', async (req, res, next) => {
 //obtener los datos de un usuaario especifico *falta agregar el puesto
 router.get('/:idUser',async (req, res, next) => {
     const { idUser } = req.params;
-    User.findByPk(idUser)
-    .then ((usuario) => {
-            if(usuario) {
-                const { idUser, nombre, apellidoP, apellidoM, email, telefono } = usuario;
-                const datosUsuario = { idUser, nombre, apellidoP, apellidoM, email, telefono }
-                return res.status(200).json({datosUsuario})
-            } else {
-                return res.status(404).json({
-                    name: "Not Found",
-                    message: "El usuario que buscas no existe :("
-                })
-            }
-        }) 
+    DB.query(
+        `select
+        idUser,nombre,apellidoM,apellidoP,o.licencia,o.vencimientoLicencia,
+        idDriver,idReceiver,idTrafficCoordinator
+        from users u left join drivers o on u.idUser=o.idDriver
+        left join receivers r on r.idReceiver=u.idUser
+        left join trafficCoordinators t on u.idUser=t.idTrafficCoordinator 
+        where u.deletedAt is NULL and idUser=:idUser`,
+    {
+        replacements: {idUser: idUser},
+        type: QueryTypes.SELECT
+    }).then((listaUsuarios) => {
+        return res.status(200).json({
+            listaUsuarios
+        });
+    })
     .catch (
         (err) => next(err)
     )
@@ -119,7 +122,7 @@ router.post('/trafficCoordinators/', async (req, res, next) => {
                 idTrafficCoordinator: a.idUser,
             })
         })   
-        
+
         let {idTrafficCoordinator, contrasena,nombreUsuairo, nombre, apellidoP, apellidoM, email, telefono} = usuarioCoordinador
         const payload = {
             idUser: usuario.idUser,
