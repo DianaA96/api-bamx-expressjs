@@ -97,8 +97,14 @@ router.patch('/:idRoute/donors/', async (req, res, next) => {
     const {route}=req.body
 
     try {
-        let ruta = await Route.findByPk(idRoute)
-        let donador = await Donor.findOne()
+        let ruta = await Route.findOne({
+            where: {nombre: route.nombre}
+        })
+        if(ruta){
+            return res.status(400).json({
+                message: "Ya existe una una ruta con ese nombre",
+            })
+        }
         console.log(ruta,"+++++++++")
         console.log()
         if(ruta){
