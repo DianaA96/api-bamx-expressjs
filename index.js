@@ -86,7 +86,7 @@ app.get('/collections', (req, res, next) => {
 )
 
 
-// Coladera de errores-- Endpoint next TQM COLADERA DE ERRORES
+//TQM coladera de errores
 app.use((err, req, res, next)=>{
     console.error(chalk.redBright(err.stack));
     return res.status(500).json({
