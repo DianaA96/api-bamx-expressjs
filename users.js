@@ -85,9 +85,9 @@ router.get('/:idUser',async (req, res, next) => {
     {
         replacements: {idUser: idUser},
         type: QueryTypes.SELECT
-    }).then((listaUsuarios) => {
+    }).then((datosUsuario) => {
         return res.status(200).json({
-            listaUsuarios
+            datosUsuario
         });
     })
     .catch (
@@ -116,7 +116,7 @@ router.post('/trafficCoordinators/', async (req, res, next) => {
 
         usuario = {...usuarioCoordinador, contrasena: contrasenaNueva}
 
-        let x = await User.create(usuario)
+        await User.create(usuario)
         .then((a)=>{
             TrafficCoordinator.create({
                 idTrafficCoordinator: a.idUser,
@@ -228,13 +228,12 @@ router.post('/receivers/', async (req, res, next) => {
 
         usuario = {...usuarioReceptor, contrasena: contrasenaNueva}
 
-        let a =await User.create(usuario)
+        let x = await User.create(usuario)
         .then((a)=>{
-            console.log(a)
-            Receiver.create({ 
+            Receiver.create({
                 idReceiver: a.idUser,
             })
-        })     
+        })   
 
         let {nombreUsuairo, nombre, apellidoP, apellidoM, email, telefono} = usuarioReceptor
         const payload = {
