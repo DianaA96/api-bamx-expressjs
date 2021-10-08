@@ -76,7 +76,7 @@ router.get('/:idUser',async (req, res, next) => {
     const { idUser } = req.params;
     DB.query(
         `select
-        nombreUsuario,nombre,apellidoM,apellidoP,o.licencia,o.vencimientoLicencia,
+        nombreUsuario,nombre,apellidoM,apellidoP,email,telefono,o.licencia,o.vencimientoLicencia,
         idDriver,idReceiver,idTrafficCoordinator
         from users u left join drivers o on u.idUser=o.idDriver
         left join receivers r on r.idReceiver=u.idUser

@@ -36,4 +36,6 @@ router.get('/:idReceiver', async (req, res, next) => {
     }
 )
 
+//AGREGAR POST DE MODIFICACION DONATIVO RECEPTOR :()
+
 module.exports = router
