@@ -64,7 +64,7 @@ router.post('/', async (req, res, next) => {
     const {donor} = req.body
     try {
         let donador = await Donor.findOne({
-            where: {determinante: donor.determinante, idRoute: donor.idRoute}
+            where: {determinante: donor.determinante}
         })
         let mismadireccion = await Donor.findOne({
             where: {
@@ -81,8 +81,10 @@ router.post('/', async (req, res, next) => {
                 message: `Ya existe un donador con estos datos `,
             })
         }
-        let donante =  await Donor.create(donor)
-        return res.status(201).json({donante})
+        console.log(donor)
+        let donante =  await Donor.create(donor).then((x) => {
+            return res.status(201).json({donante})
+        })
     } catch(err) 
     {
         next(err);

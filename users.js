@@ -171,7 +171,6 @@ router.post('/drivers/', async (req, res, next) => {
 
         usuario = {...usuarioOperador, contrasena: contrasenaNueva}
         console.log(driver)
-        let b =""
         let a =await User.create(usuario)
         .then((a)=>{
             console.log(a)
