@@ -83,10 +83,9 @@ router.post('/donors/', async (req, res, next) => {
         })
         return res.status(201).json({ruta})
 
-    } catch(err) 
-    {
-        next(err);
-    }
+    } catch(err) {
+            next(err);
+        }
     }
 )
 
@@ -118,10 +117,9 @@ router.patch('/:idRoute/donors/', async (req, res, next) => {
             })
         }
         return res.status(201).json({ruta})
-    } catch(err) 
-    {
-        next(err);
-    }
+    } catch(err) {
+            next(err);
+        }
     }
 )
 
@@ -152,10 +150,10 @@ router.delete('/:idRoute', async (req, res, next)=>{
                 message: "La ruta seleccionada no existe"
             })
         }
-    }catch(err){
-        next(err);
+    }   catch(err){
+            next(err);
+        }
     }
-}
 )
 
 module.exports = router;

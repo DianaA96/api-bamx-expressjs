@@ -3,10 +3,11 @@ const router = express.Router()
 const {QueryTypes} = require('sequelize');
 const {Donor, CollectedQuantity} =require('./database');
 const {Collection} = require('./database');
+
 // Destructuramos los modelos requeridos en las consultas que incluyen raw queries de SQL
 const {DB}  = require('./database')
 
-//TODOS LOS DONADORES
+//GET todos los donadores
 router.get('/', async (req, res, next) => {
     DB.query(
         `select
@@ -17,15 +18,15 @@ router.get('/', async (req, res, next) => {
     .then((listaDonadores) => {
         return res.status(200).json({
             listaDonadores
-        });
-    })
+            });
+        })
     .catch((err) => {
         next(err);
-    })
-}
+        })
+    }
 )
 
-//Donador especifico
+// GET donador especifico
 router.get('/:idDonor', async (req, res, next) => {
     const { idDonor } = req.params;
     DB.query(
@@ -39,25 +40,25 @@ router.get('/:idDonor', async (req, res, next) => {
             replacements:{ idDonor: idDonor},
             type: QueryTypes.SELECT
         })
-    .then((donador) => {
-        if(donador!=''){
-            return res.status(200).json({
-                donador
-            });
-        }
-        else{
-            return res.status(404).json({
-                message: `No existe un donador con esta información`,
-            })
-        }
-    })
-    //.catch((err) => {
-    //   next(err);
-    //})
-}
+        .then((donador) => {
+            if(donador!=''){
+                return res.status(200).json({
+                    donador
+                });
+            }
+            else{
+                return res.status(404).json({
+                    message: `No existe un donador con esta información`,
+                })
+            }
+        })
+        .catch((err) => {
+            next(err);
+        })
+    }
 )
 
-// crear donadores
+// POST donador
 router.post('/', async (req, res, next) => {
     console.log(req.body)
     const {donor} = req.body
@@ -75,7 +76,7 @@ router.post('/', async (req, res, next) => {
                 numExterior: donor.numExterior
             }
         })
-        if(donador||mismadireccion){
+        if(donador || mismadireccion){
             return res.status(400).json({
                 message: `Ya existe un donador con estos datos `,
             })
@@ -89,7 +90,7 @@ router.post('/', async (req, res, next) => {
     }
 )
 
-//patch DONADOR  
+// PATCH donador  
 router.patch('/:idDonor', async (req, res, next) => {
 
     const { idDonor } = req.params;

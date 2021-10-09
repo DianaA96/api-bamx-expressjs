@@ -92,7 +92,7 @@ app.get('/collections', (req, res, next) => {
 app.use((err, req, res, next)=>{
     console.error(chalk.redBright(err.stack));
     return res.status(500).json({
-        "name":err.name,
+        "name": err.name,
         "message": `${err.message}, ${err.original ? err.original : ':('}`,
     })
 })
