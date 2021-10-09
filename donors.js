@@ -97,18 +97,6 @@ router.patch('/:idDonor', async (req, res, next) => {
 
     const { idDonor } = req.params;
     const { donor } = req.body;
-    
-    (DB.query(`select
-    nombre
-    from
-    donors
-    where
-    idDonor=:idDonor;`,
-    { 
-        replacements:{ idDonor: idDonor},
-        type: QueryTypes.SELECT
-    }
-    ))
     try{
         let a =await Donor.findByPk(idDonor)
         
@@ -123,7 +111,8 @@ router.patch('/:idDonor', async (req, res, next) => {
                 colonia,
                 calle,
                 numExterior,
-                contacto,
+                telefono,
+                correo,
                 tipo
             } = a
 
@@ -137,7 +126,8 @@ router.patch('/:idDonor', async (req, res, next) => {
                     colonia,
                     calle,
                     numExterior,
-                    contacto,
+                    telefono,
+                    correo,
                     tipo
                 },
             })
