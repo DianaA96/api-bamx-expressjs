@@ -4,6 +4,7 @@ const  {QueryTypes} = require('sequelize');
 const router = express.Router();
 const {DB}  = require('./database')
 
+// GET todos los operadores
 router.get('/', async (req, res, next) => {
         DB.query(
             `SELECT * FROM drivers where deletedAt is NULL`,
@@ -19,6 +20,7 @@ router.get('/', async (req, res, next) => {
     }
 )
 
+// GET bodegas asignadas
 router.get('/assignedWarehouses/:idDriver', async (req, res, next) => {
     const { idDriver } = req.params
     let fechaDeHoy = new Date().toJSON()
@@ -45,6 +47,5 @@ router.get('/assignedWarehouses/:idDriver', async (req, res, next) => {
     })
 }
 )
-
 
 module.exports = router

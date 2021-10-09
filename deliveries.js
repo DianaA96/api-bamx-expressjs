@@ -5,7 +5,7 @@ const {Delivery, Warehouse} = require('./database');
 
 const {DB}  = require('./database')
 
-//lista de entregas
+// GET lista de entregas
 router.get('/:idReceiver', async (req, res, next) => {
     const { idReceiver } = req.params
     let fechaDeHoy = new Date().toJSON()

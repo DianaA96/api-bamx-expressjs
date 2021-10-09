@@ -2,7 +2,7 @@ require('dotenv').config();
 const {Sequelize} = require('sequelize');
 const chalk = require('chalk');
 
-//modelos del archivo models
+// Modelos del archivo models
 const adminModel = require('./models/admin');
 const assignedQuantityModel = require('./models/assignedQuantity');
 const warehousesAssignationModel = require('./models/warehousesAssignation');
