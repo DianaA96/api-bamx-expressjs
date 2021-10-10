@@ -34,8 +34,7 @@ router.get('/:idDonor', async (req, res, next) => {
         *
         from 
         donors
-        where
-        idDonor = :idDonor`,
+        where deletedAt is NULL and idDonor = :idDonor`,
         { 
             replacements:{ idDonor: idDonor},
             type: QueryTypes.SELECT
@@ -64,7 +63,7 @@ router.post('/', async (req, res, next) => {
     const {donor} = req.body
     try {
         let donador = await Donor.findOne({
-            where: {determinante: donor.determinante, idRoute: donor.idRoute}
+            where: {determinante: donor.determinante}
         })
         let mismadireccion = await Donor.findOne({
             where: {
@@ -81,8 +80,10 @@ router.post('/', async (req, res, next) => {
                 message: `Ya existe un donador con estos datos `,
             })
         }
-        let donante =  await Donor.create(donor)
-        return res.status(201).json({donante})
+        console.log(donor)
+        await Donor.create(donor).then((x) => {
+            return res.status(201).json({x})
+        })
     } catch(err) 
     {
         next(err);
@@ -95,18 +96,6 @@ router.patch('/:idDonor', async (req, res, next) => {
 
     const { idDonor } = req.params;
     const { donor } = req.body;
-    
-    (DB.query(`select
-    nombre
-    from
-    donors
-    where
-    idDonor=:idDonor;`,
-    { 
-        replacements:{ idDonor: idDonor},
-        type: QueryTypes.SELECT
-    }
-    ))
     try{
         let a =await Donor.findByPk(idDonor)
         
@@ -121,7 +110,8 @@ router.patch('/:idDonor', async (req, res, next) => {
                 colonia,
                 calle,
                 numExterior,
-                contacto,
+                telefono,
+                correo,
                 tipo
             } = a
 
@@ -135,7 +125,8 @@ router.patch('/:idDonor', async (req, res, next) => {
                     colonia,
                     calle,
                     numExterior,
-                    contacto,
+                    telefono,
+                    correo,
                     tipo
                 },
             })
@@ -193,5 +184,27 @@ router.patch('/collected/collections', async(req, res, next) => {
         next(err);
     }
 })
+
+//eliminar Usuarios
+router.delete('/:idDonor', async (req, res, next)=>{
+    const {idDonor} = req.params;
+    try{
+        let donador = await Donor.findByPk(idDonor)
+        if(donador){
+            await donador.destroy(/*{force: true}*/)
+            return res.status(200).json({
+                donadorEliminado: donador
+            })
+        }else{
+            return res.status(404).json({
+                name: "Not found",
+                message: "El donador que intenas eliminar no existe"
+            })
+        }
+    }catch(err){
+        next(err);
+    }
+}
+)
 
 module.exports = router

@@ -5,7 +5,7 @@ const chalk =require('chalk');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const {QueryTypes} = require('sequelize');
-const {Receiver, TrafficCoordinator } = require('./database');
+const {Receiver, TrafficCoordinator, Warehouse} = require('./database');
 const {User, Driver} = require('./database');
 
 // Destructuramos los modelos requeridos en las consultas que incluyen raw queries de SQL
@@ -192,7 +192,6 @@ router.post('/drivers/', async (req, res, next) => {
 
         usuario = {...usuarioOperador, contrasena: contrasenaNueva}
         console.log(driver)
-        let b =""
         let a =await User.create(usuario)
         .then((a)=>{
             console.log(a)
@@ -246,16 +245,17 @@ router.post('/receivers/', async (req, res, next) => {
         }
 
         let contrasenaNueva = await bcrypt.hash(usuarioReceptor.contrasena, 10)
-
         usuario = {...usuarioReceptor, contrasena: contrasenaNueva}
-
-        let x = await User.create(usuario)
-        .then((a)=>{
-            Receiver.create({
-                idReceiver: a.idUser,
-            })
-        })   
-
+        
+        let d = await User.create(usuario)// registro del ultimo usuario
+        let c = await Warehouse.findByPk(receiver.idWarehouse)//cuerpo de la bodega dentro del registro
+        if(c&&d){
+            await Receiver.create({
+                idReceiver: d.idUser,
+                idWarehouse: receiver.idWarehouse    
+            })       
+            await c.update({idReceiver: d.idUser})
+        }
         let {nombreUsuairo, nombre, apellidoP, apellidoM, email, telefono} = usuarioReceptor
         const payload = {
             idUser: usuario.idUser,

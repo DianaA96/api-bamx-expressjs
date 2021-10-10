@@ -29,7 +29,7 @@ module.exports=(DB,type) => {
         },
         estado:{
             type: type.STRING,
-            allowNull: false,
+            allowNull: true,
         },
         municipio:{
             type: type.STRING,
@@ -45,7 +45,15 @@ module.exports=(DB,type) => {
         },
         numExterior:{
             type: type.INTEGER,
-            allowNull: false
+            allowNull: true
+        },
+        correo: {
+            type:type.STRING,
+            allowNull: true,
+            unique:true,
+            validate:{
+                isEmail:true,
+            }
         },
         telefono: {
             type: type.STRING,
