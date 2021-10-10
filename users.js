@@ -33,7 +33,7 @@ router.get('/', async (req, res, next) => {
         })
     } 
 
-    else if (req.query.role) {
+    else if (req.query.role && req.query.order) {
         DB.query(
             `select
             idUser,nombre,apellidoM,apellidoP,idDriver,idReceiver,idTrafficCoordinator
@@ -41,26 +41,7 @@ router.get('/', async (req, res, next) => {
             users u left join drivers o on u.idUser=o.idDriver
             left join receivers r on r.idReceiver=u.idUser
             left join trafficCoordinators t on u.idUser=t.idTrafficCoordinator where u.deletedAt is NULL
-            and id${req.query.role} is not NULL`
-            ,{nest:true,type: QueryTypes.SELECT}
-        ).then((listaUsuarios) => {
-            return res.status(200).json({
-                listaUsuarios
-            });
-        })
-        .catch((err) => {
-            next(err);
-        })
-    }
-
-    else if (req.query.order) {
-        DB.query(
-            `select
-            idUser,nombre,apellidoM,apellidoP,idDriver,idReceiver,idTrafficCoordinator
-            from
-            users u left join drivers o on u.idUser=o.idDriver
-            left join receivers r on r.idReceiver=u.idUser
-            left join trafficCoordinators t on u.idUser=t.idTrafficCoordinator where u.deletedAt is NULL
+            and id${req.query.role} is not NULL
             order by nombre ${req.query.order}`
             ,{nest:true,type: QueryTypes.SELECT}
         ).then((listaUsuarios) => {
