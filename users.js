@@ -11,24 +11,45 @@ const {User, Driver} = require('./database');
 // Destructuramos los modelos requeridos en las consultas que incluyen raw queries de SQL
 const { DB }  = require('./database')
 
-//obtiene todo los usuarios **CHECAR EL SELECT
+//obtiene todo los usuarios **CHECAR EL SELECT - ESTE ENDPOINT DEBERÍA IR AL FINAL DEL ARCHIVO PORQUE ES EL ENDPOINT MÁS GENERAL :)
 router.get('/', async (req, res, next) => {
-    DB.query(
-        `select
-        idUser,nombre,apellidoM,apellidoP,idDriver,idReceiver,idTrafficCoordinator
-        from
-        users u left join drivers o on u.idUser=o.idDriver
-        left join receivers r on r.idReceiver=u.idUser
-        left join trafficCoordinators t on u.idUser=t.idTrafficCoordinator where u.deletedAt is NULL`
-        ,{nest:true,type: QueryTypes.SELECT}
-    ).then((listaUsuarios) => {
-        return res.status(200).json({
-            listaUsuarios
-        });
-    })
-    .catch((err) => {
-        next(err);
-    })
+    if (req.query.name) {
+        DB.query(
+            `select
+            idUser,nombre,apellidoM,apellidoP,idDriver,idReceiver,idTrafficCoordinator
+            from
+            users u left join drivers o on u.idUser=o.idDriver
+            left join receivers r on r.idReceiver=u.idUser
+            left join trafficCoordinators t on u.idUser=t.idTrafficCoordinator where u.deletedAt is NULL
+            and nombre LIKE "%${req.query.name}%" or apellidoP LIKE "%${req.query.name}%" or apellidoM LIKE "%${req.query.name}%" or idUser LIKE "%${req.query.name}%"`
+            ,{nest:true,type: QueryTypes.SELECT}
+        ).then((listaUsuarios) => {
+            return res.status(200).json({
+                listaUsuarios
+            });
+        })
+        .catch((err) => {
+            next(err);
+        })
+    } 
+    else {
+        DB.query(
+            `select
+            idUser,nombre,apellidoM,apellidoP,idDriver,idReceiver,idTrafficCoordinator
+            from
+            users u left join drivers o on u.idUser=o.idDriver
+            left join receivers r on r.idReceiver=u.idUser
+            left join trafficCoordinators t on u.idUser=t.idTrafficCoordinator where u.deletedAt is NULL`
+            ,{nest:true,type: QueryTypes.SELECT}
+        ).then((listaUsuarios) => {
+            return res.status(200).json({
+                listaUsuarios
+            });
+        })
+        .catch((err) => {
+            next(err);
+        })
+    }
 })
 
 //obtiene a los receptores
