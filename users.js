@@ -33,7 +33,8 @@ router.get('/', async (req, res, next) => {
         })
     } 
 
-    else if (req.query.role && req.query.order) {
+    else if (req.query.role || req.query.order) {
+        let varConsultaRol = `and ${req.query.role} is not NULL`
         DB.query(
             `select
             idUser,nombre,apellidoM,apellidoP,idDriver,idReceiver,idTrafficCoordinator
@@ -41,7 +42,7 @@ router.get('/', async (req, res, next) => {
             users u left join drivers o on u.idUser=o.idDriver
             left join receivers r on r.idReceiver=u.idUser
             left join trafficCoordinators t on u.idUser=t.idTrafficCoordinator where u.deletedAt is NULL
-            and id${req.query.role} is not NULL
+            ${req.query.role ? varConsultaRol: ""}
             order by nombre ${req.query.order}`
             ,{nest:true,type: QueryTypes.SELECT}
         ).then((listaUsuarios) => {
