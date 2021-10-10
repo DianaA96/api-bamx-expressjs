@@ -34,8 +34,7 @@ router.get('/:idDonor', async (req, res, next) => {
         *
         from 
         donors
-        where
-        idDonor = :idDonor`,
+        where deletedAt is NULL and idDonor = :idDonor`,
         { 
             replacements:{ idDonor: idDonor},
             type: QueryTypes.SELECT
@@ -82,7 +81,7 @@ router.post('/', async (req, res, next) => {
             })
         }
         console.log(donor)
-        let donante =  await Donor.create(donor).then((x) => {
+        await Donor.create(donor).then((x) => {
             return res.status(201).json({x})
         })
     } catch(err) 
@@ -185,5 +184,27 @@ router.patch('/collected/collections', async(req, res, next) => {
         next(err);
     }
 })
+
+//eliminar Usuarios
+router.delete('/:idDonor', async (req, res, next)=>{
+    const {idDonor} = req.params;
+    try{
+        let donador = await Donor.findByPk(idDonor)
+        if(donador){
+            await donador.destroy(/*{force: true}*/)
+            return res.status(200).json({
+                donadorEliminado: donador
+            })
+        }else{
+            return res.status(404).json({
+                name: "Not found",
+                message: "El donador que intenas eliminar no existe"
+            })
+        }
+    }catch(err){
+        next(err);
+    }
+}
+)
 
 module.exports = router
