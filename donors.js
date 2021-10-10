@@ -83,7 +83,7 @@ router.post('/', async (req, res, next) => {
         }
         console.log(donor)
         let donante =  await Donor.create(donor).then((x) => {
-            return res.status(201).json({donante})
+            return res.status(201).json({x})
         })
     } catch(err) 
     {
