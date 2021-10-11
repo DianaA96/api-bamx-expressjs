@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const chalk = require('chalk');
 const {QueryTypes} = require('sequelize');
-const { Route, Donor, Vehicle } = require('./database');
+const { Route, Donor, Vehicle, Collection } = require('./database');
 
 // Destructuramos los modelos requeridos en las consultas que incluyen raw queries de SQL
 const { DB }  = require('./database');
@@ -95,6 +95,52 @@ router.get('/:idRoute', async (req, res, next) => {
        next(err);
    })
 })
+
+// ENDPOINT MODAL ASIGNAR RUTAS DE RECOLECCIÓN [POST]
+router.post('/assignroute/', async (req, res, next) => {
+        
+        const {idDriver, idRoute, idVehicle, donors} = req.body.body
+        try {
+            //Búsqueda de las tiendas asociadas a una ruta
+            let tiendasAsociadasRuta = await Donor.findAll(
+                {
+                    attributes: ["idDonor"],
+                    where: {
+                        idRoute: idRoute
+                    }
+                }
+            )
+            
+            // Creamos fecha en el backend
+            let nuevaFecha = new Date()
+            
+            // Ciclamos el post de recolecciones de donadores asociados a la ruta especificada
+            for(let a = 0; a < tiendasAsociadasRuta.length; a++) { 
+                await Collection.create({ 
+                    fechaAsignacion: nuevaFecha,
+                    idDriver: idDriver,
+                    idDonor: tiendasAsociadasRuta[a].dataValues.idDonor,
+                    idVehicle: idVehicle
+                })
+            }
+            
+            // Ciclamos el post de recolecciones de donadores extraordinarios
+            for(let b = 0; b < donors.length; b++) {
+                await Collection.create({ 
+                    fechaAsignacion: nuevaFecha,
+                    idDriver: idDriver,
+                    idDonor: donors[b],
+                    idVehicle: idVehicle
+                })
+            }
+
+            return res.status(201).json(req.body)
+            
+        } catch(err) {
+            next(err);
+        }
+    }
+)
 
 //Crear una ruta
 router.post('/donors/', async (req, res, next) => {
