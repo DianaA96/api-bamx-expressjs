@@ -29,8 +29,8 @@ router.get('/:idVehicle',async (req, res, next) => {
     Vehicle.findByPk(idVehicle)
     .then ((vehicle) => {
             if(vehicle) {
-                const { modelo, placa, poliza, vencimientoPoliza } = vehicle;
-                const datosVehiculo = { modelo, placa, poliza, vencimientoPoliza}
+                const { idVehicle, modelo, placa, poliza, vencimientoPoliza } = vehicle;
+                const datosVehiculo = { idVehicle,modelo, placa, poliza, vencimientoPoliza}
                 return res.status(200).json({datosVehiculo})
             } else {
                 return res.status(404).json({

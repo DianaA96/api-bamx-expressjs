@@ -21,7 +21,7 @@ router.get('/', async (req, res, next) => {
             users u left join drivers o on u.idUser=o.idDriver
             left join receivers r on r.idReceiver=u.idUser
             left join trafficCoordinators t on u.idUser=t.idTrafficCoordinator where u.deletedAt is NULL
-            and nombre LIKE "%${req.query.name}%" or apellidoP LIKE "%${req.query.name}%" or apellidoM LIKE "%${req.query.name}%" or idUser LIKE "%${req.query.name}%"`
+            and nombre LIKE "%${req.query.name}%" or u.deletedAt is NULL and apellidoP LIKE "%${req.query.name}%" or u.deletedAt is NULL and apellidoM LIKE "%${req.query.name}%" or u.deletedAt is NULL and idUser LIKE "%${req.query.name}%"`
             ,{nest:true,type: QueryTypes.SELECT}
         ).then((listaUsuarios) => {
             return res.status(200).json({

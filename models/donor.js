@@ -13,7 +13,7 @@ module.exports=(DB,type) => {
             allowNull: false,
         },
         tipo:{
-            type: type.ENUM('Recurrente','Extraordinario','Unico'),
+            type: type.ENUM('Recurrente','Extraordinario','Único'),
         },
         idRoute:{
             type: type.INTEGER,
