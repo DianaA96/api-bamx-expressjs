@@ -2,13 +2,14 @@ const express = require('express');
 const router = express.Router();
 const chalk = require('chalk');
 const {QueryTypes} = require('sequelize');
-const {Route,Donor} = require('./database');
+const { Route, Donor, Vehicle } = require('./database');
 
 // Destructuramos los modelos requeridos en las consultas que incluyen raw queries de SQL
 const { DB }  = require('./database');
 
 //obtiene todas las rutas
 router.get('/', async (req, res, next) => {
+    
      DB.query(
         `select
         r.nombre,count(r.idRoute) as puntosRecoleccion
@@ -29,6 +30,45 @@ router.get('/', async (req, res, next) => {
     .catch((err) => {
         next(err);
     })
+})
+
+// ENDPOINT MODAL ASIGNAR RUTA DE RECOLECCIÓN: DEVUELVE LA INFORMACIÓN QUE SE MAPEARÁ EN LOS SELECTS
+router.get('/extradonors/vehicles', async (req, res, next) => {
+    
+    try {
+       let rutas = await Route.findAll(
+            {
+                attributes: [["idRoute", "value"], ["nombre", "label"]],
+                group: 'nombre'
+            }
+        )
+
+        let extraDonors = await Donor.findAll(
+            {
+                attributes: [["idDonor", "value"], ["nombre", "label"]],
+                where: {
+                    tipo: "Extraordinario"
+            }}
+        )
+
+        let unidades = await Vehicle.findAll(
+            {
+                attributes: [["idVehicle", "value"], ["modelo", "label"]],
+            }
+        )
+
+        if(extraDonors || rutas || unidades) {
+            return res.status(200).json(
+                 {rutas, extraDonors, unidades})
+        } else {
+            return res.status(404).json({
+                name: "Not Found",
+                message: "Fallo en la búsqueda de rutas"
+            })
+        } 
+    } catch (err) {
+        next(err)
+        }
 })
 
 //obtener ruta especifica
