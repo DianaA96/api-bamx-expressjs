@@ -35,31 +35,24 @@ module.exports=(DB,type) => {
         },
         folio:{
             type:type.STRING,
-            allowNull:false
         },
         longitud:{
             type: type.DOUBLE,
-            allowNull:false
         },
         latitud:{
             type: type.DOUBLE,
-            allowNull:false
         },
         fechaRecoleccion:{
             type: type.DATE,
-            allowNull:false
         },
         responsableEntrega:{
             type: type.STRING,
-            allowNull:false
         },
         nota:{
             type: type.BOOLEAN,
-            allowNull:false
         },
         recolectado:{
             type: type.BOOLEAN,
-            allowNull: false,
         },
     },{
         paranoid:true
