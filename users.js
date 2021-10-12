@@ -1,9 +1,8 @@
 // Importamos Express, el Router y los modelos necesarios para las queries
 const express = require('express');
 const router = express.Router();
-const chalk =require('chalk');
 const jwt = require('jsonwebtoken');
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
 const {QueryTypes} = require('sequelize');
 const {Receiver, TrafficCoordinator, Warehouse} = require('./database');
 const {User, Driver} = require('./database');

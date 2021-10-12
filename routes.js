@@ -1,6 +1,5 @@
 const express = require('express');
 const router = express.Router();
-const chalk = require('chalk');
 const {QueryTypes} = require('sequelize');
 const { Route, Donor, Vehicle, Collection } = require('./database');
 
