@@ -100,6 +100,7 @@ router.get('/:idRoute', async (req, res, next) => {
 router.post('/assignroute/', async (req, res, next) => {
         
         const {idDriver, idRoute, idVehicle, donors} = req.body.body
+        
         try {
             //Búsqueda de las tiendas asociadas a una ruta
             let tiendasAsociadasRuta = await Donor.findAll(
