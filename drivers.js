@@ -14,7 +14,7 @@ router.get('/', async (req, res, next) => {
         DB.query(
         `
         select
-        u.nombre,apellidoM,apellidoP,o.idDriver
+        u.nombre,apellidoM,apellidoP,nombreUsuario,o.idDriver
         from
         users u join drivers o on u.idUser=o.idDriver
         where
@@ -24,7 +24,7 @@ router.get('/', async (req, res, next) => {
         from 
         drivers o left join collections c on o.idDriver=c.idDriver
         where c.idDriver is null or ((date(fechaRecoleccion) != '${fechaDeHoy.toISOString().slice(0, 19).replace('T', ' ')}') and fechaRecoleccion is not null))
-        and nombre LIKE "%${req.query.name}%" or u.deletedAt is NULL and apellidoP LIKE "%${req.query.name}%" or u.deletedAt is NULL and apellidoM LIKE "%${req.query.name}%"
+        and nombre LIKE "%${req.query.name}%" or u.deletedAt is NULL and apellidoP LIKE "%${req.query.name}%" or u.deletedAt is NULL and apellidoM LIKE "%${req.query.name}%" or u.deletedAt is NULL and nombreUsuario LIKE "%${req.query.name}%"
         `, { type: Sequelize.QueryTypes.SELECT }
         )
         .then((listaUsuarios) => {
@@ -40,7 +40,7 @@ router.get('/', async (req, res, next) => {
     else if(req.query.order) {
         DB.query(
             `select
-            u.nombre,apellidoM,apellidoP,o.idDriver
+            u.nombre,apellidoM,apellidoP,nombreUsuario,o.idDriver
             from
             users u join drivers o on u.idUser=o.idDriver
             where
@@ -66,7 +66,7 @@ router.get('/', async (req, res, next) => {
     else{
         DB.query(
             `select
-            u.nombre,apellidoM,apellidoP,o.idDriver
+            u.nombre,apellidoM,apellidoP,nombreUsuario,o.idDriver
             from
             users u join drivers o on u.idUser=o.idDriver
             where
