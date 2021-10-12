@@ -1,6 +1,5 @@
 require('dotenv').config();
 const {Sequelize} = require('sequelize');
-const chalk = require('chalk');
 
 // Modelos del archivo models
 const adminModel = require('./models/admin');
@@ -57,17 +56,17 @@ const Warehouse = warehouseModel(DB,Sequelize);
 // Se accede a la instancia de la base de datos
 DB.authenticate()
 .then( () => {
-    console.log(chalk.cyanBright('Connection has been established successfully.'));
+    console.log('Connection has been established successfully.');
 })
 .catch ( err  => {
-    console.error(chalk.redBright('Unable to connect to the database: ', err));
+    console.error('Unable to connect to the database: ', err);
 });
 
 
 // DB.sync({ force: true }) para hacer drop de las models antes del sync
 DB.sync().then(() => {
-    console.log(chalk.cyanBright(`Database & tables created!`))
-}).catch(err => console.error(chalk.redBright(err)))
+    console.log(`Database & tables created!`)
+}).catch(err => console.error(err))
 
 
 // Se exportan los módulos

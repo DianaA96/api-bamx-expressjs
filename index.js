@@ -1,10 +1,9 @@
 const express = require('express');
 const { QueryTypes } = require('sequelize');
-const chalk = require('chalk');//resaltador
 const cors = require('cors') //npm install cors
 const bodyParser = require ('body-parser'); //npm install  --save body-parser
 const app = express();
-const port = 5000;
+const port = process.env.PORT || 5000;
 
 const users = require('./users');
 const routes = require('./routes');
@@ -27,7 +26,7 @@ app.use('/deliveries',deliveries);
 const { DB, Refer }  = require('./database')
 
 app.listen(port, () => {
-    console.log (chalk.cyanBright(`Server is running on port ${port}`))
+    console.log (`Server is running on port ${port}`)
 });
 
 // Lista Recolección. Este endpoint consulta las recolecciones realizadas
@@ -40,7 +39,7 @@ app.get('/collections/driver', (req, res, next) => {
     DB.query(
         `
         select 
-        u.nombre,fechaRecoleccion,d.nombre,cp,estado,municipio,colonia,calle,numExterior
+        u.nombre,fechaRecoleccion,d.nombre,d.idDonor,cp,estado,municipio,colonia,calle,numExterior
         from
         users u join drivers o on u.idUser = o.idDriver
         join collections using (idDriver)
@@ -51,7 +50,7 @@ app.get('/collections/driver', (req, res, next) => {
         { type: QueryTypes.SELECT })
         .then((queryResult) => {
             return res.status(200).json({
-                recolecciones: queryResult
+                data: queryResult
             })
         }
         )
@@ -92,7 +91,6 @@ app.get('/collections', (req, res, next) => {
 
 //TQM coladera de errores
 app.use((err, req, res, next)=>{
-    console.error(chalk.redBright(err.stack));
     return res.status(500).json({
         "name": err.name,
         "message": `${err.message}, ${err.original ? err.original : ':('}`,
