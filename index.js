@@ -34,18 +34,19 @@ app.listen(port, () => {
 app.get('/collections/driver', (req, res, next) => {
 
     const { thisDriver: idEmployee } = req.query
-    let fechaDeHoy = new Date().toJSON()
+    let fechaDeHoy = new Date()
 
     // Raw SQL Query
     DB.query(
-        `select 
+        `
+        select 
         u.nombre,fechaRecoleccion,d.nombre,cp,estado,municipio,colonia,calle,numExterior
         from
         users u join drivers o on u.idUser = o.idDriver
         join collections using (idDriver)
         join donors d using (idDonor)
         where
-        fechaRecoleccion= "${fechaDeHoy}" and idDriver= ${parseInt(idEmployee)} and recolectado=0;
+        idDriver= ${parseInt(idEmployee)} and (recolectado=0 or recolectado is null)
         `,
         { type: QueryTypes.SELECT })
         .then((queryResult) => {
@@ -59,6 +60,7 @@ app.get('/collections/driver', (req, res, next) => {
         })
     }
 )
+// FALTA IMPLEMENTAR LA FECHA DE HOY
 
 //  Confirmación nota operador
 app.get('/collections', (req, res, next) => {
