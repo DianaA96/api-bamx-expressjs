@@ -29,7 +29,7 @@ app.listen(port, () => {
     console.log (`Server is running on port ${port}`)
 });
 
-// Lista Recolección. Este endpoint consulta las recolecciones realizadas
+// Lista Recolección. Este endpoint consulta las recolecciones asignadas
 app.get('/collections/driver', (req, res, next) => {
 
     const { thisDriver: idEmployee } = req.query
@@ -39,7 +39,7 @@ app.get('/collections/driver', (req, res, next) => {
     DB.query(
         `
         select 
-        u.nombre,fechaRecoleccion,d.nombre,d.idDonor,cp,estado,municipio,colonia,calle,numExterior
+        u.nombre,fechaRecoleccion,idCollection, d.nombre,d.idDonor,cp,estado,municipio,colonia,calle,numExterior
         from
         users u join drivers o on u.idUser = o.idDriver
         join collections using (idDriver)
@@ -59,6 +59,39 @@ app.get('/collections/driver', (req, res, next) => {
         })
     }
 )
+
+// Lista Recolecciones hechas. Este endpoint consulta las recolecciones realizadas
+app.get('/collections/done/driver', (req, res, next) => {
+
+    const { thisDriver: idEmployee } = req.query
+    let fechaDeHoy = new Date()
+
+    // Raw SQL Query
+    DB.query(
+        `
+        select 
+        u.nombre,fechaRecoleccion, idCollection,d.nombre,d.idDonor,cp,estado,municipio,colonia,calle,numExterior
+        from
+        users u join drivers o on u.idUser = o.idDriver
+        join collections using (idDriver)
+        join donors d using (idDonor)
+        where
+        idDriver= ${parseInt(idEmployee)} and recolectado=1 and date(fechaAsignacion) = '${(fechaDeHoy.toISOString().slice(0, 19).replace('T', ' ')).slice(0,10)}'
+        `,
+        { type: QueryTypes.SELECT })
+        .then((queryResult) => {
+            return res.status(200).json({
+                data: queryResult
+            })
+        }
+        )
+        .catch ((err) => {
+            next(err);
+        })
+    }
+)
+
+
 // FALTA IMPLEMENTAR LA FECHA DE HOY
 
 //  Confirmación nota operador
