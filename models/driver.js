@@ -1,5 +1,5 @@
 module.exports=(DB,type) => {
-    return DB.define('driver', {
+    return DB.define('drivers', {
         idDriver: {
              type: type.INTEGER,
              //autoIncrement:true,

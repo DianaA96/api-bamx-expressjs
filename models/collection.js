@@ -1,5 +1,5 @@
 module.exports=(DB,type) => {
-    return DB.define('collection', {
+    return DB.define('collections', {
         idCollection:{
             type: type.INTEGER,
             primaryKey: true,

@@ -54,6 +54,12 @@ const User = userModel(DB,Sequelize);
 const Vehicle = vehicleModel(DB,Sequelize);
 const Warehouse = warehouseModel(DB,Sequelize);
 
+// Relaciones
+User.hasMany(Driver, { foreignKey: 'idDriver', targetKey: 'idUser' })
+Categorie.belongsToMany(Collection, {through:'collectedQuantities'})
+Collection.belongsToMany(Categorie, {through:'collectedQuantities'})
+Driver.hasMany(Collection, { foreignKey: 'idDriver', targetKey: 'idDriver' })
+
 // Se accede a la instancia de la base de datos
 DB.authenticate()
 .then( () => {
