@@ -1,10 +1,9 @@
 const express = require('express');
-const { QueryTypes, Sequelize } = require('sequelize');
-const chalk = require('chalk');//resaltador
+const { QueryTypes } = require('sequelize');
 const cors = require('cors') //npm install cors
 const bodyParser = require ('body-parser'); //npm install  --save body-parser
 const app = express();
-const port = 5000;
+const port = process.env.PORT || 5000;
 
 const users = require('./users');
 const routes = require('./routes');
@@ -13,7 +12,7 @@ const drivers = require('./drivers');
 const vehicles = require('./vehicles');
 const deliveries = require('./deliveries');
 
-app.use (bodyParser.json());
+app.use (bodyParser.json()); 
 app.use(cors());
 
 app.use('/users', users);
@@ -27,10 +26,10 @@ app.use('/deliveries',deliveries);
 const { DB, Driver, CollectedQuantity, Collection, User, Categorie }  = require('./database')
 
 app.listen(port, () => {
-    console.log (chalk.cyanBright(`Server is running on port ${port}`))
+    console.log (`Server is running on port ${port}`)
 });
 
-// Lista Recolección. Este endpoint consulta las recolecciones realizadas
+// Lista Recolección. Este endpoint consulta las recolecciones asignadas
 app.get('/collections/driver', (req, res, next) => {
 
     const { thisDriver: idEmployee } = req.query
@@ -40,18 +39,18 @@ app.get('/collections/driver', (req, res, next) => {
     DB.query(
         `
         select 
-        u.nombre,fechaRecoleccion,d.nombre,cp,estado,municipio,colonia,calle,numExterior
+        u.nombre,fechaRecoleccion,idCollection, d.nombre,d.idDonor,cp,estado,municipio,colonia,calle,numExterior
         from
         users u join drivers o on u.idUser = o.idDriver
         join collections using (idDriver)
         join donors d using (idDonor)
         where
-        idDriver= ${parseInt(idEmployee)} and (recolectado=0 or recolectado is null)
+        idDriver= ${parseInt(idEmployee)} and (recolectado=0 or recolectado is null) and date(fechaAsignacion) = '${(fechaDeHoy.toISOString().slice(0, 19).replace('T', ' ')).slice(0,10)}'
         `,
         { type: QueryTypes.SELECT })
         .then((queryResult) => {
             return res.status(200).json({
-                recolecciones: queryResult
+                data: queryResult
             })
         }
         )
@@ -60,6 +59,39 @@ app.get('/collections/driver', (req, res, next) => {
         })
     }
 )
+
+// Lista Recolecciones hechas. Este endpoint consulta las recolecciones realizadas
+app.get('/collections/done/driver', (req, res, next) => {
+
+    const { thisDriver: idEmployee } = req.query
+    let fechaDeHoy = new Date()
+
+    // Raw SQL Query
+    DB.query(
+        `
+        select 
+        u.nombre,fechaRecoleccion, idCollection,d.nombre,d.idDonor,cp,estado,municipio,colonia,calle,numExterior
+        from
+        users u join drivers o on u.idUser = o.idDriver
+        join collections using (idDriver)
+        join donors d using (idDonor)
+        where
+        idDriver= ${parseInt(idEmployee)} and recolectado=1 and date(fechaAsignacion) = '${(fechaDeHoy.toISOString().slice(0, 19).replace('T', ' ')).slice(0,10)}'
+        `,
+        { type: QueryTypes.SELECT })
+        .then((queryResult) => {
+            return res.status(200).json({
+                data: queryResult
+            })
+        }
+        )
+        .catch ((err) => {
+            next(err);
+        })
+    }
+)
+
+
 // FALTA IMPLEMENTAR LA FECHA DE HOY
 
 //  Confirmación nota operador
@@ -188,7 +220,6 @@ app.get('/assigneddeliveries/:idReceiver', async (req, res, next) => {
 
 //TQM coladera de errores
 app.use((err, req, res, next)=>{
-    console.error(chalk.redBright(err.stack));
     return res.status(500).json({
         "name": err.name,
         "message": `${err.message}, ${err.original ? err.original : ':('}`,

@@ -164,14 +164,14 @@ router.patch('/:idDonor', async (req, res, next) => {
 router.patch('/collected/collections', async(req, res, next) => {
     
     const { thisCollection: idCollection } = req.query
-    const { collected } = req.body
+    const { collected, collections } = req.body
     console.log(collected)
 
     try {
         let recoleccion = await Collection.findByPk(idCollection)
         
         if(recoleccion) {
-            await recoleccion.update(req.body.body)
+            await recoleccion.update(collections)
             console.log(recoleccion);
             if(collected.rec1){
                 await CollectedQuantity.create(collected.rec1)
