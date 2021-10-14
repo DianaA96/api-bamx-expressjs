@@ -45,7 +45,7 @@ app.get('/collections/driver', (req, res, next) => {
         join collections using (idDriver)
         join donors d using (idDonor)
         where
-        idDriver= ${parseInt(idEmployee)} and (recolectado=0 or recolectado is null)
+        idDriver= ${parseInt(idEmployee)} and (recolectado=0 or recolectado is null) and date(fechaAsignacion) = '${(fechaDeHoy.toISOString().slice(0, 19).replace('T', ' ')).slice(0,10)}'
         `,
         { type: QueryTypes.SELECT })
         .then((queryResult) => {
