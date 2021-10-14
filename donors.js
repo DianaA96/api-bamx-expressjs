@@ -9,21 +9,39 @@ const {DB}  = require('./database')
 
 //GET todos los donadores
 router.get('/', async (req, res, next) => {
-    DB.query(
-        `select
-        *
-        from 
-        donors where deletedAt is NULL`,
-        { nest:true,type: QueryTypes.SELECT})
-    .then((listaDonadores) => {
-        return res.status(200).json({
-            listaDonadores
-            });
-        })
-    .catch((err) => {
-        next(err);
-        })
-    }
+
+    if(req.query.route){
+        DB.query(
+            `select
+            *
+            from 
+            donors where deletedAt is NULL and idRoute = ${req.query.route}`,
+            { nest:true,type: QueryTypes.SELECT})
+        .then((listaDonadores) => {
+            return res.status(200).json({
+                listaDonadores
+                });
+            })
+        .catch((err) => {
+            next(err);
+            })
+    }   else {
+        DB.query(
+            `select
+            *
+            from 
+            donors where deletedAt is NULL`,
+            { nest:true,type: QueryTypes.SELECT})
+        .then((listaDonadores) => {
+            return res.status(200).json({
+                listaDonadores
+                });
+            })
+        .catch((err) => {
+            next(err);
+            })
+        }
+    } 
 )
 
 // GET donador especifico
@@ -156,16 +174,16 @@ router.patch('/collected/collections', async(req, res, next) => {
             await recoleccion.update(req.body.body)
             console.log(recoleccion);
             if(collected.rec1){
-                await CollectedQuantity.create(rec1)
+                await CollectedQuantity.create(collected.rec1)
             }
             if(collected.rec2){
-                await CollectedQuantity.create(rec2)
+                await CollectedQuantity.create(collected.rec2)
             }
             if(collected.rec3){
-                await CollectedQuantity.create(rec3)
+                await CollectedQuantity.create(collected.rec3)
             }
             if(collected.rec4){
-                await CollectedQuantity.create(rec4)
+                await CollectedQuantity.create(collected.rec4)
             }
             return res.status(200).json({
                 recoleccionActualizada: recoleccion,

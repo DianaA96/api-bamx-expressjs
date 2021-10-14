@@ -8,28 +8,118 @@ const { Route, Donor, Vehicle, Collection } = require('./database');
 const { DB }  = require('./database');
 
 //obtiene todas las rutas
-router.get('/', async (req, res, next) => {
-    
-     DB.query(
-        `select
-        r.nombre,count(r.idRoute) as puntosRecoleccion
-        from
-        routes r
-        left join donors d on r.idRoute=d.idRoute
-        group by nombre order by r.createdAt desc;`,
-        { 
-           nest:true, 
-           type: QueryTypes.SELECT
-        }
-    )
-    .then((rutas) => {
-        return res.status(200).json({
-            rutas
-        });
-    })
-    .catch((err) => {
-        next(err);
-    })
+router.get('/', async (req, res, next) => { 
+    if (req.query.name) {
+        DB.query(
+            `select
+            r.nombre,count(r.idRoute) as puntosRecoleccion,r.idRoute
+            from
+            routes r
+            left join donors d on r.idRoute=d.idRoute
+            where r.nombre LIKE "%${req.query.name}%" and r.deletedAt is NULL or d.nombre LIKE "%${req.query.name}%" and d.deletedAt is NULL 
+            or d.municipio LIKE "%${req.query.name}%" and d.deletedAt is NULL or d.calle LIKE "%${req.query.name}%" and d.deletedAt is NULL
+            or d.colonia LIKE "%${req.query.name}%" and d.deletedAt is NULL
+            group by nombre order by r.createdAt desc;`,
+            { 
+               nest:true, 
+               type: QueryTypes.SELECT
+            }
+        )
+        .then((rutas) => {
+            return res.status(200).json({
+                rutas
+            });
+        })
+        .catch((err) => {
+            next(err);
+        })
+    } else if (req.query.order) {
+        DB.query(
+            `select
+            r.nombre,count(r.idRoute) as puntosRecoleccion,r.idRoute
+            from
+            routes r
+            left join donors d on r.idRoute=d.idRoute
+            group by nombre order by r.nombre ${req.query.order};`,
+            { 
+               nest:true, 
+               type: QueryTypes.SELECT
+            }
+        )
+        .then((rutas) => {
+            return res.status(200).json({
+                rutas
+            });
+        })
+        .catch((err) => {
+            next(err);
+        })
+    } else if (req.query.donors) {
+        DB.query(
+            `select
+            r.nombre,count(r.idRoute) as puntosRecoleccion,r.idRoute
+            from
+            routes r
+            left join donors d on r.idRoute=d.idRoute
+            group by nombre order by count(r.idRoute) ${req.query.donors};`,
+            { 
+               nest:true, 
+               type: QueryTypes.SELECT
+            }
+        )
+        .then((rutas) => {
+            return res.status(200).json({
+                rutas
+            });
+        })
+        .catch((err) => {
+            next(err);
+        })
+    } else if (req.query.numberDonors) {
+        DB.query(
+            `select
+            r.nombre,count(d.idRoute) as puntosRecoleccion
+            from
+            routes r
+            join donors d using(idRoute)
+            group by nombre
+            having
+            puntosRecoleccion=${req.query.numberDonors}`,
+            { 
+               nest:true, 
+               type: QueryTypes.SELECT
+            }
+        )
+        .then((rutas) => {
+            return res.status(200).json({
+                rutas
+            });
+        })
+        .catch((err) => {
+            next(err);
+        })
+    } else {
+        DB.query(
+            `select
+            r.nombre,count(r.idRoute) as puntosRecoleccion,r.idRoute
+            from
+            routes r
+            left join donors d on r.idRoute=d.idRoute
+            group by nombre order by r.createdAt desc;`,
+            { 
+               nest:true, 
+               type: QueryTypes.SELECT
+            }
+        )
+        .then((rutas) => {
+            return res.status(200).json({
+                rutas
+            });
+        })
+        .catch((err) => {
+            next(err);
+        })
+    }
 })
 
 // ENDPOINT MODAL ASIGNAR RUTA DE RECOLECCIÓN: DEVUELVE LA INFORMACIÓN QUE SE MAPEARÁ EN LOS SELECTS
