@@ -9,21 +9,39 @@ const {DB}  = require('./database')
 
 //GET todos los donadores
 router.get('/', async (req, res, next) => {
-    DB.query(
-        `select
-        *
-        from 
-        donors where deletedAt is NULL`,
-        { nest:true,type: QueryTypes.SELECT})
-    .then((listaDonadores) => {
-        return res.status(200).json({
-            listaDonadores
-            });
-        })
-    .catch((err) => {
-        next(err);
-        })
-    }
+
+    if(req.query.route){
+        DB.query(
+            `select
+            *
+            from 
+            donors where deletedAt is NULL and idRoute = ${req.query.route}`,
+            { nest:true,type: QueryTypes.SELECT})
+        .then((listaDonadores) => {
+            return res.status(200).json({
+                listaDonadores
+                });
+            })
+        .catch((err) => {
+            next(err);
+            })
+    }   else {
+        DB.query(
+            `select
+            *
+            from 
+            donors where deletedAt is NULL`,
+            { nest:true,type: QueryTypes.SELECT})
+        .then((listaDonadores) => {
+            return res.status(200).json({
+                listaDonadores
+                });
+            })
+        .catch((err) => {
+            next(err);
+            })
+        }
+    } 
 )
 
 // GET donador especifico
