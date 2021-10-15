@@ -77,6 +77,8 @@ router.post('/', async (req, res, next)=>{
                 entregado3: delivered.ent3,
                 entregado4: delivered.ent4
             })
+        }).catch((err) => {
+            next(err);
         })
     }catch(err) {
         next(err)
