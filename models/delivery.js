@@ -13,7 +13,7 @@ module.exports=(DB,type) => {
                 key: 'idReceiver'
             }
         },
-        idAssignedWarehouse:{
+        idWarehousesAssignation:{
             type: type.INTEGER,
             foreignKey: true,
             references:{
