@@ -167,7 +167,7 @@ router.get('/assigndeliveries', async(req, res, next) =>{
             { type: QueryTypes.SELECT })
         
         let idChofer = -1
-        let chofer = {
+        let chofer = [ {
             idDriver: '',
             operador: '',
             nombreUsuario: '',
@@ -175,6 +175,7 @@ router.get('/assigndeliveries', async(req, res, next) =>{
             apellidoM: '',
             recolecciones: []
         }
+        ]
         let aux
 
         for (let i = 0; i < driverData.length; i++) {
@@ -193,11 +194,11 @@ router.get('/assigndeliveries', async(req, res, next) =>{
                     `, 
                     { type: QueryTypes.SELECT })
                     
-                    chofer.idDriver = aux[0].idDriver
-                    chofer.operador = aux[0].operador
-                    chofer.nombreUsuario = aux[0].nombreUsuario
-                    chofer.apellidoP = aux[0].apellidoP
-                    chofer.apellidoM = aux[0].apellidoM
+                    chofer[0].idDriver = aux[0].idDriver
+                    chofer[0].operador = aux[0].operador
+                    chofer[0].nombreUsuario = aux[0].nombreUsuario
+                    chofer[0].apellidoP = aux[0].apellidoP
+                    chofer[0].apellidoM = aux[0].apellidoM
                     
             } else {
                 aux = await DB.query(
@@ -213,7 +214,7 @@ router.get('/assigndeliveries', async(req, res, next) =>{
                     `, 
                     { type: QueryTypes.SELECT })
                     console.log(aux)
-                    chofer.recolecciones = (aux)
+                    chofer[0].recolecciones = (aux)
             }
         }
 
