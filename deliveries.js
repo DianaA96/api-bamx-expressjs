@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router()
 const {QueryTypes} = require('sequelize');
-const {Delivery, Categorie, DeliveredQuantity} = require('./database');
+const {Delivery, DeliveredQuantity} = require('./database');
 
 const {DB}  = require('./database')
 
