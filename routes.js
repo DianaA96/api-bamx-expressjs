@@ -163,26 +163,50 @@ router.get('/extradonors/vehicles', async (req, res, next) => {
 //obtener ruta especifica
 router.get('/:idRoute', async (req, res, next) => {
     const {idRoute} = req.params
-    DB.query(
-        `select
-        r.idRoute ,r.nombre,d.nombre,calle, numExterior, colonia, cp
-        from
-        routes r left join donors d on r.idRoute=d.idRoute
-        where r.idRoute=:idRoute`,
-       { 
-           replacements:{idRoute: idRoute},
-           nest:true, 
-           type: QueryTypes.SELECT
-       }
-    )
-   .then((rutas) => {
-       return res.status(200).json({
-           rutas
+
+    try {
+        let ruta = {
+            idRuta: '',
+            nombreRuta: '',
+            puntosRecoleccion : []
+        }
+
+        let rutaQuery = await DB.query(
+                        `select
+                        r.idRoute ,r.nombre as nombreRuta
+                        from
+                        routes r left join donors d on r.idRoute=d.idRoute
+                        where r.idRoute=:idRoute`,
+                    { 
+                        replacements:{idRoute: idRoute},
+                        nest:true, 
+                        type: QueryTypes.SELECT
+                    }
+                )
+        
+        let puntosDeRecoleccion = await DB.query(
+                        `select
+                        d.idDonor, d.nombre,calle, numExterior, colonia, cp
+                        from
+                        routes r left join donors d on r.idRoute=d.idRoute
+                        where r.idRoute=:idRoute`,
+                    { 
+                        replacements:{idRoute: idRoute},
+                        nest:true, 
+                        type: QueryTypes.SELECT
+                    }
+                )
+        
+        ruta.idRuta = rutaQuery[0].idRuta
+        ruta.nombreRuta = rutaQuery[0].nombreRuta
+        ruta.puntosRecoleccion = puntosDeRecoleccion
+
+        return res.status(200).json({
+           ruta
        });
-   })
-   .catch((err) => {
-       next(err);
-   })
+    } catch(err) {
+        next(err);
+    }
 })
 
 // ENDPOINT MODAL ASIGNAR RUTAS DE RECOLECCIÓN [POST]

@@ -125,14 +125,14 @@ app.get('/collections', (req, res, next) => {
 // GET asignar rutas de entrega
 app.get('/assigneddeliveries/:idReceiver', async (req, res, next) => {
 
-    const {idReceiver} = req.params;
+    const { idReceiver } = req.params;
     let fechaDeAyer = new Date((new Date()). valueOf() - 1000*60*60*24)
 
     try {
         // Raw SQL Query
         let driverData = await DB.query(
             `select
-            distinct o.idDriver,u.nombre as operador,u.apellidoP,u.apellidoM,cantidad as cantidadAEntregar,categories.nombre as categoria
+            distinct o.idDriver, u.nombreUsuario, v.modelo, u.nombre as operador,u.apellidoP,u.apellidoM,cantidad as cantidadAEntregar,categories.nombre as categoria
             from
             users u join drivers o on u.idUser=o.idDriver
             join warehousesAssignations wa using(idDriver)
@@ -140,70 +140,58 @@ app.get('/assigneddeliveries/:idReceiver', async (req, res, next) => {
             join deliveredQuantities using(idDelivery)
             join categories using(idCategory)
             join collections c on c.idDriver=o.idDriver
-            join vehicles using(idVehicle)
-            where date(fecha)='${(fechaDeAyer.toISOString().slice(0, 19).replace('T', ' ')).slice(0,10)}' and
-            idReceiver=${parseInt(idReceiver)}
+            join vehicles v using(idVehicle)
+            where date(fecha)='2021-10-13' and
+            idReceiver=${idReceiver}
             `,
             { type: QueryTypes.SELECT })
         
         let idChofer = -1
-        let chofer = {
-            idDriver: '',
-            operador: '',
-            apellidoP: '',
-            apellidoM: '',
-            entregas: []
+        let data = [ ]
+        let auxChofer = {
+            operador : '',
+            apellidoP : '',
+            apellidoM : '',
+            nombreUsuario : '',
+            modelo : '',
+            pan : '',
+            fruta : '',
+            abarrote : '',
+            noComestible : ''
         }
-        let aux
 
         for (let i = 0; i < driverData.length; i++) {
             if(idChofer !== driverData[i].idDriver) {
                 idChofer = driverData[i].idDriver
-                aux = await DB.query(
-                    `select
-                    distinct o.idDriver,u.nombre as operador,u.apellidoP,u.apellidoM,cantidad as cantidadAEntregar,categories.nombre as categoria
-                    from
-                    users u join drivers o on u.idUser=o.idDriver
-                    join warehousesAssignations wa using(idDriver)
-                    join deliveries using(idWarehousesAssignation)
-                    join deliveredQuantities using(idDelivery)
-                    join categories using(idCategory)
-                    join collections c on c.idDriver=o.idDriver
-                    join vehicles using(idVehicle)
-                    where date(fecha)='2021-10-09' and
-                    idReceiver=1
-                    `, 
-                    { type: QueryTypes.SELECT })
-                    
-                    chofer.idDriver = aux[0].idDriver
-                    chofer.operador = aux[0].operador
-                    chofer.apellidoP = aux[0].apellidoP
-                    chofer.apellidoM = aux[0].apellidoM
-                    
-            } else {
-                aux = await DB.query(
-                    `select
-                    distinct cantidad as cantidadAEntregar,categories.nombre as categoria
-                    from
-                    users u join drivers o on u.idUser=o.idDriver
-                    join warehousesAssignations wa using(idDriver)
-                    join deliveries using(idWarehousesAssignation)
-                    join deliveredQuantities using(idDelivery)
-                    join categories using(idCategory)
-                    join collections c on c.idDriver=o.idDriver
-                    join vehicles using(idVehicle)
-                    where date(fecha)='2021-10-09' and
-                    idReceiver=1
-                    `, 
-                    { type: QueryTypes.SELECT })
-                    console.log(aux)
-                    chofer.entregas = (aux)
-            }
+                auxChofer.operador = driverData[i].operador
+                auxChofer.apellidoP = driverData[i].apellidoP
+                auxChofer.apellidoM = driverData[i].apellidoM
+                auxChofer.nombreUsuario = driverData[i].nombreUsuario
+                auxChofer.modelo = driverData[i].modelo
+                
+                
+                for (let i = 0; i < driverData.length; i++) {
+                    if(driverData[i].categoria === 'Pan' && idChofer === driverData[i].idDriver ) {
+                        auxChofer.pan = driverData[i].cantidadAEntregar
+                    }
+                    else if (driverData[i].categoria === 'Abarrote' && idChofer === driverData[i].idDriver ) {
+                        auxChofer.abarrote = driverData[i].cantidadAEntregar
+                    }
+                    else if (driverData[i].categoria === 'Frutas y verduras' && idChofer === driverData[i].idDriver ) {
+                        auxChofer.fruta = driverData[i].cantidadAEntregar
+                    }
+                    else if (driverData[i].categoria === 'No comestible'&& idChofer === driverData[i].idDriver ) {
+                        auxChofer.noComestible = driverData[i].cantidadAEntregar
+                    } 
+                }
+                data.push(auxChofer)
+                auxChofer = {}
+            } 
         }
 
-        if(chofer){
+        if(driverData){
             return res.status(200).json({
-                chofer
+                data
             })
         } else {
             return res.status(400).json({
