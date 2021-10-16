@@ -102,7 +102,7 @@ app.get('/collections', (req, res, next) => {
     // Raw SQL Query
     DB.query(
         `select
-        folio,fechaRecoleccion,responsableEntrega,d.nombre,d.calle,cantidad
+        folio,fechaRecoleccion,responsableEntrega,d.nombre,d.calle,cantidad, nota
         from 
         donors d join collections c using (idDonor)
         join collectedQuantities cq using(idCollection)
