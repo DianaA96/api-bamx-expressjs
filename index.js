@@ -160,12 +160,8 @@ app.get('/assigneddeliveries/:idReceiver', async (req, res, next) => {
             noComestible : ''
         }
 
-        console.log(driverData)
-        console.log(auxChofer)
-
         for (let i = 0; i < driverData.length; i++) {
-            console.log('PrimerFor: ')
-            console.log(auxChofer)
+        
             if(idChofer !== driverData[i].idDriver) {
                 idChofer = driverData[i].idDriver
                 auxChofer.operador = driverData[i].operador
@@ -173,12 +169,8 @@ app.get('/assigneddeliveries/:idReceiver', async (req, res, next) => {
                 auxChofer.apellidoM = driverData[i].apellidoM
                 auxChofer.nombreUsuario = driverData[i].nombreUsuario
                 auxChofer.modelo = driverData[i].modelo
-                console.log('El if: ')
-                console.log(auxChofer)
-                
+               
                 for (let i = 0; i < driverData.length; i++) {
-                    console.log('SegundoFor: ')
-                    console.log(auxChofer)
 
                     if(driverData[i].categoria === 'Pan' && idChofer === driverData[i].idDriver ) {
                         auxChofer.pan = driverData[i].CantidadaEntregar
@@ -193,8 +185,6 @@ app.get('/assigneddeliveries/:idReceiver', async (req, res, next) => {
                         auxChofer.noComestible = driverData[i].CantidadaEntregar
                     } 
                 }
-                console.log('FinSegundoFor: ')
-                console.log(auxChofer)
                 data.push(auxChofer)
                 auxChofer = {}
             } 
