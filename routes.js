@@ -25,9 +25,15 @@ router.get('/', async (req, res, next) => {
             }
         )
         .then((rutas) => {
-            return res.status(200).json({
-                rutas
-            });
+            if(rutas!=''){
+                return res.status(200).json({
+                    rutas
+                })
+            }else{
+                return res.status(400).json({
+                    message: "No hay registros coincidentes"
+                })
+            }
         })
         .catch((err) => {
             next(err);
@@ -46,9 +52,15 @@ router.get('/', async (req, res, next) => {
             }
         )
         .then((rutas) => {
-            return res.status(200).json({
-                rutas
-            });
+            if(rutas!=''){
+                return res.status(200).json({
+                    rutas
+                })
+            }else{
+                return res.status(400).json({
+                    message: "No hay registros coincidentes"
+                })
+            }
         })
         .catch((err) => {
             next(err);
@@ -67,9 +79,15 @@ router.get('/', async (req, res, next) => {
             }
         )
         .then((rutas) => {
-            return res.status(200).json({
-                rutas
-            });
+            if(rutas!=''){
+                return res.status(200).json({
+                    rutas
+                })
+            }else{
+                return res.status(400).json({
+                    message: "No hay registros coincidentes"
+                })
+            }
         })
         .catch((err) => {
             next(err);
@@ -90,9 +108,15 @@ router.get('/', async (req, res, next) => {
             }
         )
         .then((rutas) => {
-            return res.status(200).json({
-                rutas
-            });
+            if(rutas!=''){
+                return res.status(200).json({
+                    rutas
+                })
+            }else{
+                return res.status(400).json({
+                    message: "No hay registros coincidentes"
+                })
+            }
         })
         .catch((err) => {
             next(err);
@@ -111,9 +135,15 @@ router.get('/', async (req, res, next) => {
             }
         )
         .then((rutas) => {
-            return res.status(200).json({
-                rutas
-            });
+            if(rutas!=''){
+                return res.status(200).json({
+                    rutas
+                })
+            }else{
+                return res.status(400).json({
+                    message: "No hay registros coincidentes"
+                })
+            }
         })
         .catch((err) => {
             next(err);
