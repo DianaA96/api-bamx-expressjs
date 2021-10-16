@@ -319,8 +319,7 @@ router.post('/donors/', async (req, res, next) => {
     }
 )
 
-
-//Actualiza una ruta ***CORREGIR****
+//Actualiza una ruta
 router.patch('/:idRoute/donors/', async (req, res, next) => {
     const idRuta =(req.params.idRoute)
     const {route}=req.body
@@ -358,21 +357,9 @@ router.patch('/:idRoute/donors/', async (req, res, next) => {
     }
 )
 
-
 //eliminar ruta
 router.delete('/:idRoute', async (req, res, next)=>{
     const {idRoute} = req.params;
-    DB.query(`select
-            nombre
-            from
-            Routes
-            where
-            idRoute=:idRoute`,
-        {   
-            replacements: {idRoute: idRoute},
-            type: QueryTypes.SELECT
-        }    
-        )
     try{
         let ruta = await Route.findByPk(idRoute)
         if(ruta){
