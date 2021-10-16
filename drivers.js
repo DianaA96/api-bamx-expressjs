@@ -33,7 +33,7 @@ router.get('/', async (req, res, next) => {
                     listaUsuarios
                 });
             }else{
-                return res.status(400).json({
+                return res.status(404).json({
                     message: "No hay registros coincidentes"
                 })
             }
@@ -60,9 +60,15 @@ router.get('/', async (req, res, next) => {
             `, { type: Sequelize.QueryTypes.SELECT }
             )
             .then((listaUsuarios) => {
-                return res.status(200).json({
-                    listaUsuarios
-                });
+                if(listaUsuarios!=''){
+                    return res.status(200).json({
+                        listaUsuarios
+                    });
+                }else{
+                    return res.status(404).json({
+                        message: "No hay registros coincidentes"
+                    })
+                }
             })
             .catch((err) => {
                 next(err);
@@ -85,9 +91,15 @@ router.get('/', async (req, res, next) => {
             `, { type: Sequelize.QueryTypes.SELECT }
             )
             .then((listaUsuarios) => {
-                return res.status(200).json({
-                    listaUsuarios
-                });
+                if(listaUsuarios!=''){
+                    return res.status(200).json({
+                        listaUsuarios
+                    });
+                }else{
+                    return res.status(404).json({
+                        message: "No hay registros coincidentes"
+                    })
+                }
             })
             .catch((err) => {
                 next(err);
@@ -113,9 +125,15 @@ router.get('/assignedWarehouses/:idDriver', async (req, res, next) => {
         }
     )
     .then((listaEntregas) => {
-        return res.status(200).json({
-            listaEntregas 
-        });
+        if(listaEntregas!=''){
+            return res.status(200).json({
+                listaEntregas
+            });
+        }else{
+            return res.status(400).json({
+                message: "Este operador aun no tiene una ruta de entregas asignada"
+            })
+        }
     })
     .catch((err) => {
         next(err);
@@ -128,7 +146,6 @@ router.get('/assignedWarehouses/:idDriver', async (req, res, next) => {
 router.get('/enroutedrivers', async(req, res, next) =>{
 
     let fechaDeHoy = new Date()
-
     DB.query(
         `select
         nombreUsuario,u.nombre,apellidoP,apellidoM,sum(recolectado = 1) as recolectadas,sum(recolectado = 0) as norecolectadas
@@ -143,9 +160,15 @@ router.get('/enroutedrivers', async(req, res, next) =>{
         }
     )
     .then((choferes) => {
-        return res.status(200).json({
-            choferes 
-        });
+        if(choferes!=''){
+            return res.status(200).json({
+                choferes 
+            });
+        }else{
+            return res.status(404).json({
+                name: "No hay operadores en ruta"
+            })
+        }
     })
     .catch((err) => {
         next(err);
