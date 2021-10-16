@@ -24,6 +24,7 @@ router.get('/', async (req, res, next) => {
                 });
             }else{
                 return res.status(404).json({
+                    name:"Not found",
                     message: `No existen donadores asigndos a esa ruta`,
                 })
             }
@@ -45,6 +46,7 @@ router.get('/', async (req, res, next) => {
                 });
             }else{
                 return res.status(404).json({
+                    name:"Not found",
                     message: `Aun no tienes donarores registrados`,
                 })
             }
@@ -77,6 +79,7 @@ router.get('/:idDonor', async (req, res, next) => {
             }
             else{
                 return res.status(404).json({
+                    name: "Not found",
                     message: `No existe un donador con esta información`,
                 })
             }
@@ -107,6 +110,7 @@ router.post('/', async (req, res, next) => {
         })
         if(donador || mismadireccion){
             return res.status(400).json({
+                name: "Not found",
                 message: `Ya existe un donador con estos datos `,
             })
         }
