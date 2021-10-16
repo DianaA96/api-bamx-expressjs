@@ -10,7 +10,6 @@ const {User, Driver, CollectedQuantity, Collection} = require('./database');
 router.get('/', async (req, res, next) => {
 
     let fechaDeHoy = new Date()
-
     if(req.query.name) {
         DB.query(
         `
@@ -29,9 +28,15 @@ router.get('/', async (req, res, next) => {
         `, { type: Sequelize.QueryTypes.SELECT }
         )
         .then((listaUsuarios) => {
-            return res.status(200).json({
-                listaUsuarios
-            });
+            if(listaUsuarios!=''){
+                return res.status(200).json({
+                    listaUsuarios
+                });
+            }else{
+                return res.status(400).json({
+                    message: "No hay registros coincidentes"
+                })
+            }
         })
         .catch((err) => {
             next(err);
@@ -217,7 +222,6 @@ router.get('/assigndeliveries', async(req, res, next) =>{
                     chofer[0].recolecciones = (aux)
             }
         }
-
         if(chofer){
             return res.status(200).json({
                 chofer
