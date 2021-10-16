@@ -291,10 +291,10 @@ router.post('/donors/', async (req, res, next) => {
     console.log(req.body)
     const {route}=req.body
     try {
-        let nombrer = await Route.findOne({
+        let nombreRuta = await Route.findOne({
             where: {nombre: route.nombre}
         })
-        if(nombrer){
+        if(nombreRuta){
             return res.status(400).json({
                 message: "Ya existe una una ruta con ese nombre",
             })
@@ -319,39 +319,45 @@ router.post('/donors/', async (req, res, next) => {
     }
 )
 
-//Actualiza una ruta
-router.patch('/:idRoute/donors/', async (req, res, next) => {
-    console.log(req.body)
-    const {idRoute, idDonor}= req.params
-    const {route}=req.body
 
+//Actualiza una ruta ***CORREGIR****
+router.patch('/:idRoute/donors/', async (req, res, next) => {
+    const idRuta =(req.params.idRoute)
+    const {route}=req.body
+    console.log(route,"AAAAAAAAA")
+    console.log(idRuta,"XXXXXXXX")
     try {
-        let ruta = await Route.findOne({
+        let nombreRuta = await Route.findOne({
             where: {nombre: route.nombre}
         })
-        if(ruta){
+        if(nombreRuta){
             return res.status(400).json({
                 message: "Ya existe una una ruta con ese nombre",
             })
         }
-        if(ruta){
-            await ruta.update(route)
-            //pr es donors
+        let rutaExiste = await Route.findByPk(idRuta)
+        if(rutaExiste){
+            let ruta= await rutaExiste.update({nombre:route.nombre})
             let ids = route.pr
             ids.map(async (x,i)=>{
-            //console.log(chalk.greenBright(route.pr[i]))
-            await Donor.findByPk(route.pr[i]).then((y)=>{
-                let x =y.idDonor //x es el resultado de buscarlo
+                console.log(route.pr[i])
+                await Donor.findByPk(route.pr[i]).then((donador)=>{
+                    donador.update({idRoute:idRuta})
+                })
             })
-            await Donor.update({idRoute: ruta.idRoute}, {where:{idDonor: Donor.idDonor=x}} )
-            })
+            return res.status(201).json({ruta})
+        }else{
+            return res.status(404).json(
+                {message: "La ruta que intentas editar no existe."}
+            )
         }
-        return res.status(201).json({ruta})
+
     } catch(err) {
             next(err);
         }
     }
 )
+
 
 //eliminar ruta
 router.delete('/:idRoute', async (req, res, next)=>{
