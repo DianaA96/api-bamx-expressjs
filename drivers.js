@@ -10,7 +10,6 @@ const {User, Driver, CollectedQuantity, Collection} = require('./database');
 router.get('/', async (req, res, next) => {
 
     let fechaDeHoy = new Date()
-
     if(req.query.name) {
         DB.query(
         `
@@ -29,9 +28,16 @@ router.get('/', async (req, res, next) => {
         `, { type: Sequelize.QueryTypes.SELECT }
         )
         .then((listaUsuarios) => {
-            return res.status(200).json({
-                listaUsuarios
-            });
+            if(listaUsuarios!=''){
+                return res.status(200).json({
+                    listaUsuarios
+                });
+            }else{
+                return res.status(404).json({
+                    name:"Not found",
+                    message: "No hay registros coincidentes"
+                })
+            }
         })
         .catch((err) => {
             next(err);
@@ -55,9 +61,16 @@ router.get('/', async (req, res, next) => {
             `, { type: Sequelize.QueryTypes.SELECT }
             )
             .then((listaUsuarios) => {
-                return res.status(200).json({
-                    listaUsuarios
-                });
+                if(listaUsuarios!=''){
+                    return res.status(200).json({
+                        listaUsuarios
+                    });
+                }else{
+                    return res.status(404).json({
+                        name: "Not found",
+                        message: "No hay registros coincidentes"
+                    })
+                }
             })
             .catch((err) => {
                 next(err);
@@ -80,9 +93,16 @@ router.get('/', async (req, res, next) => {
             `, { type: Sequelize.QueryTypes.SELECT }
             )
             .then((listaUsuarios) => {
-                return res.status(200).json({
-                    listaUsuarios
-                });
+                if(listaUsuarios!=''){
+                    return res.status(200).json({
+                        listaUsuarios
+                    });
+                }else{
+                    return res.status(404).json({
+                        name: "Not found",
+                        message: "No hay registros coincidentes"
+                    })
+                }
             })
             .catch((err) => {
                 next(err);
@@ -108,9 +128,16 @@ router.get('/assignedWarehouses/:idDriver', async (req, res, next) => {
         }
     )
     .then((listaEntregas) => {
-        return res.status(200).json({
-            listaEntregas 
-        });
+        if(listaEntregas!=''){
+            return res.status(200).json({
+                listaEntregas
+            });
+        }else{
+            return res.status(400).json({
+                name: "Not found",
+                message: "Este operador aun no tiene una ruta de entregas asignada"
+            })
+        }
     })
     .catch((err) => {
         next(err);
@@ -123,7 +150,6 @@ router.get('/assignedWarehouses/:idDriver', async (req, res, next) => {
 router.get('/enroutedrivers', async(req, res, next) =>{
 
     let fechaDeHoy = new Date()
-
     DB.query(
         `select
         nombreUsuario,u.nombre,apellidoP,apellidoM,sum(recolectado = 1) as recolectadas,sum(recolectado = 0) as norecolectadas
@@ -138,9 +164,16 @@ router.get('/enroutedrivers', async(req, res, next) =>{
         }
     )
     .then((choferes) => {
-        return res.status(200).json({
-            choferes 
-        });
+        if(choferes!=''){
+            return res.status(200).json({
+                choferes 
+            });
+        }else{
+            return res.status(404).json({
+                name:"Not found",
+                message: "No hay operadores en ruta"
+            })
+        }
     })
     .catch((err) => {
         next(err);
@@ -217,13 +250,13 @@ router.get('/assigndeliveries', async(req, res, next) =>{
                     chofer[0].recolecciones = (aux)
             }
         }
-
         if(chofer){
             return res.status(200).json({
                 chofer
             })
         } else {
             return res.status(400).json({
+                name: "Not found",
                 message: "No hay registros coincidentes"
             })
         }
