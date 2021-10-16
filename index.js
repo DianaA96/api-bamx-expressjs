@@ -102,7 +102,7 @@ app.get('/collections', (req, res, next) => {
     // Raw SQL Query
     DB.query(
         `select
-        folio,fechaRecoleccion,responsableEntrega,d.nombre,d.calle,cantidad
+        folio,fechaRecoleccion,responsableEntrega,d.nombre,d.calle,cantidad, nota
         from 
         donors d join collections c using (idDonor)
         join collectedQuantities cq using(idCollection)
@@ -132,15 +132,15 @@ app.get('/assigneddeliveries/:idReceiver', async (req, res, next) => {
         // Raw SQL Query
         let driverData = await DB.query(
             `select
-            distinct o.idDriver, u.nombreUsuario, v.modelo, u.nombre as operador,u.apellidoP,u.apellidoM,cantidad as cantidadAEntregar,categories.nombre as categoria
+            distinct o.idDriver,u.nombre as operador,u.apellidoP,u.apellidoM,cantidad as CantidadaEntregar,categories.nombre as categoria,modelo,u.nombreUsuario
             from
             users u join drivers o on u.idUser=o.idDriver
             join warehousesAssignations wa using(idDriver)
-            join deliveries using(idWarehousesAssignation)
-            join deliveredQuantities using(idDelivery)
+            join assignedQuantities using(idWarehousesAssignation)
             join categories using(idCategory)
             join collections c on c.idDriver=o.idDriver
-            join vehicles v using(idVehicle)
+            join vehicles using(idVehicle)
+            join warehouses w on w.idWarehouse=wa.idWarehouse
             where date(fecha)='2021-10-13' and
             idReceiver=${idReceiver}
             `,
@@ -161,6 +161,7 @@ app.get('/assigneddeliveries/:idReceiver', async (req, res, next) => {
         }
 
         for (let i = 0; i < driverData.length; i++) {
+        
             if(idChofer !== driverData[i].idDriver) {
                 idChofer = driverData[i].idDriver
                 auxChofer.operador = driverData[i].operador
@@ -168,20 +169,20 @@ app.get('/assigneddeliveries/:idReceiver', async (req, res, next) => {
                 auxChofer.apellidoM = driverData[i].apellidoM
                 auxChofer.nombreUsuario = driverData[i].nombreUsuario
                 auxChofer.modelo = driverData[i].modelo
-                
-                
+               
                 for (let i = 0; i < driverData.length; i++) {
+
                     if(driverData[i].categoria === 'Pan' && idChofer === driverData[i].idDriver ) {
-                        auxChofer.pan = driverData[i].cantidadAEntregar
+                        auxChofer.pan = driverData[i].CantidadaEntregar
                     }
                     else if (driverData[i].categoria === 'Abarrote' && idChofer === driverData[i].idDriver ) {
-                        auxChofer.abarrote = driverData[i].cantidadAEntregar
+                        auxChofer.abarrote = driverData[i].CantidadaEntregar
                     }
                     else if (driverData[i].categoria === 'Frutas y verduras' && idChofer === driverData[i].idDriver ) {
-                        auxChofer.fruta = driverData[i].cantidadAEntregar
+                        auxChofer.fruta = driverData[i].CantidadaEntregar
                     }
                     else if (driverData[i].categoria === 'No comestible'&& idChofer === driverData[i].idDriver ) {
-                        auxChofer.noComestible = driverData[i].cantidadAEntregar
+                        auxChofer.noComestible = driverData[i].CantidadaEntregar
                     } 
                 }
                 data.push(auxChofer)
