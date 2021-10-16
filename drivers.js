@@ -34,6 +34,7 @@ router.get('/', async (req, res, next) => {
                 });
             }else{
                 return res.status(404).json({
+                    name:"Not found",
                     message: "No hay registros coincidentes"
                 })
             }
@@ -66,6 +67,7 @@ router.get('/', async (req, res, next) => {
                     });
                 }else{
                     return res.status(404).json({
+                        name: "Not found",
                         message: "No hay registros coincidentes"
                     })
                 }
@@ -97,6 +99,7 @@ router.get('/', async (req, res, next) => {
                     });
                 }else{
                     return res.status(404).json({
+                        name: "Not found",
                         message: "No hay registros coincidentes"
                     })
                 }
@@ -131,6 +134,7 @@ router.get('/assignedWarehouses/:idDriver', async (req, res, next) => {
             });
         }else{
             return res.status(400).json({
+                name: "Not found",
                 message: "Este operador aun no tiene una ruta de entregas asignada"
             })
         }
@@ -166,7 +170,8 @@ router.get('/enroutedrivers', async(req, res, next) =>{
             });
         }else{
             return res.status(404).json({
-                name: "No hay operadores en ruta"
+                name:"Not found",
+                message: "No hay operadores en ruta"
             })
         }
     })
@@ -251,6 +256,7 @@ router.get('/assigndeliveries', async(req, res, next) =>{
             })
         } else {
             return res.status(400).json({
+                name: "Not found",
                 message: "No hay registros coincidentes"
             })
         }
