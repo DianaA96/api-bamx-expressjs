@@ -11,7 +11,7 @@ router.get('/', async (req, res, next) => {
     if (req.query.name) {
         DB.query(
             `select
-            r.nombre,count(r.idRoute) as puntosRecoleccion,r.idRoute
+            r.nombre,count(d.idRoute) as puntosRecoleccion,r.idRoute
             from
             routes r
             left join donors d on r.idRoute=d.idRoute
@@ -25,9 +25,15 @@ router.get('/', async (req, res, next) => {
             }
         )
         .then((rutas) => {
-            return res.status(200).json({
-                rutas
-            });
+            if(rutas) {
+                return res.status(200).json({
+                    rutas
+                });
+            } else {
+                return res.status(404).json({
+                    message: 'No se encontraron rutas'
+                });
+            }
         })
         .catch((err) => {
             next(err);
@@ -35,7 +41,7 @@ router.get('/', async (req, res, next) => {
     } else if (req.query.order) {
         DB.query(
             `select
-            r.nombre,count(r.idRoute) as puntosRecoleccion,r.idRoute
+            r.nombre,count(d.idRoute) as puntosRecoleccion,r.idRoute
             from
             routes r
             left join donors d on r.idRoute=d.idRoute
@@ -46,9 +52,15 @@ router.get('/', async (req, res, next) => {
             }
         )
         .then((rutas) => {
-            return res.status(200).json({
-                rutas
-            });
+            if(rutas) {
+                return res.status(200).json({
+                    rutas
+                });
+            } else {
+                return res.status(404).json({
+                    message: 'No se encontraron rutas'
+                });
+            }
         })
         .catch((err) => {
             next(err);
@@ -56,7 +68,7 @@ router.get('/', async (req, res, next) => {
     } else if (req.query.donors) {
         DB.query(
             `select
-            r.nombre,count(r.idRoute) as puntosRecoleccion,r.idRoute
+            r.nombre,count(d.idRoute) as puntosRecoleccion,r.idRoute
             from
             routes r
             left join donors d on r.idRoute=d.idRoute
@@ -67,9 +79,15 @@ router.get('/', async (req, res, next) => {
             }
         )
         .then((rutas) => {
-            return res.status(200).json({
-                rutas
-            });
+            if(rutas) {
+                return res.status(200).json({
+                    rutas
+                });
+            } else {
+                return res.status(404).json({
+                    message: 'No se encontraron rutas'
+                });
+            }
         })
         .catch((err) => {
             next(err);
@@ -90,9 +108,15 @@ router.get('/', async (req, res, next) => {
             }
         )
         .then((rutas) => {
-            return res.status(200).json({
-                rutas
-            });
+            if(rutas) {
+                return res.status(200).json({
+                    rutas
+                });
+            } else {
+                return res.status(404).json({
+                    message: 'No se encontraron rutas'
+                });
+            }
         })
         .catch((err) => {
             next(err);
@@ -100,7 +124,7 @@ router.get('/', async (req, res, next) => {
     } else {
         DB.query(
             `select
-            r.nombre,count(r.idRoute) as puntosRecoleccion,r.idRoute
+            r.nombre,count(d.idRoute) as puntosRecoleccion,r.idRoute
             from
             routes r
             left join donors d on r.idRoute=d.idRoute
@@ -111,9 +135,15 @@ router.get('/', async (req, res, next) => {
             }
         )
         .then((rutas) => {
-            return res.status(200).json({
-                rutas
-            });
+            if(rutas) {
+                return res.status(200).json({
+                    rutas
+                });
+            } else {
+                return res.status(404).json({
+                    message: 'No se encontraron rutas'
+                });
+            }
         })
         .catch((err) => {
             next(err);
