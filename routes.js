@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const {QueryTypes} = require('sequelize');
-const { Route, Donor, Vehicle, Collection } = require('./database');
+const { Route, Donor, Vehicle, Collection, Warehouse} = require('./database');
 
 // Destructuramos los modelos requeridos en las consultas que incluyen raw queries de SQL
 const { DB }  = require('./database');
@@ -319,13 +319,11 @@ router.post('/donors/', async (req, res, next) => {
     }
 )
 
-
-//Actualiza una ruta ***CORREGIR****
+//Actualiza una ruta
 router.patch('/:idRoute/donors/', async (req, res, next) => {
     const idRuta =(req.params.idRoute)
     const {route}=req.body
-    console.log(route,"AAAAAAAAA")
-    console.log(idRuta,"XXXXXXXX")
+
     try {
         let nombreRuta = await Route.findOne({
             where: {nombre: route.nombre}
@@ -358,21 +356,66 @@ router.patch('/:idRoute/donors/', async (req, res, next) => {
     }
 )
 
+//Asignar entrega operador
+router.post('/deliveries/assignedWarehouses', async (req, res, next) => {
+    let idDriver = (req.body.idDriver)
+    let entregas = (req.body.rutaEntrega)
+    let fechaDeHoy = new Date()
+    fechaDeHoy=((fechaDeHoy.toISOString()))
+    try{
+        let bodega = await Warehouse.findOne({where:{nombre: entregas.entrega1.nombre}})        
+        DB.query(
+            `
+            INSERT 
+            INTO warehousesAssignations (fecha, idDriver, idWarehouse)
+            VALUES ('${fechaDeHoy}', '${idDriver}', '${bodega.idWarehouse}');`,
+            { type: QueryTypes.INSERT }
+            ).then(async (asignacion) => {
+                (DB.query(
+                    `
+                    INSERT 
+                    INTO assignedQuantities (idWarehousesAssignation, idCategory , cantidad ) 
+                    VALUES (${asignacion[0]},${entregas.entrega1.c1.idCategoria},${entregas.entrega1.c1.cantidad});`,
+                    { type: QueryTypes.INSERT}
+                   ),
+                DB.query(//definir if para realizar inserciones
+                    `
+                    INSERT 
+                    INTO assignedQuantities (idWarehousesAssignation, idCategory , cantidad ) 
+                    VALUES (${asignacion[0]},${entregas.entrega1.c2.idCategoria},${entregas.entrega1.c2.cantidad});`,
+                    { type: QueryTypes.INSERT}     
+                    ),
+                DB.query(
+                    `
+                    INSERT 
+                    INTO assignedQuantities (idWarehousesAssignation, idCategory , cantidad ) 
+                    VALUES (${asignacion[0]},${entregas.entrega1.c3.idCategoria},${entregas.entrega1.c3.cantidad});`,
+                    { type: QueryTypes.INSERT}     
+                    ),
+                DB.query(
+                    `
+                    INSERT 
+                    INTO assignedQuantities (idWarehousesAssignation, idCategory , cantidad ) 
+                    VALUES (${asignacion[0]},${entregas.entrega1.c4.idCategoria},${entregas.entrega1.c4.cantidad});`,
+                    { type: QueryTypes.INSERT}     
+                    )
+                ).then((entregas) =>{
+                    return res.status(201).json({
+                        entregas
+                    })
+                }).catch((err) =>{
+                    next(err);
+                })
+            })
+
+    }catch(err) {
+        next(err);
+    }
+})
 
 //eliminar ruta
 router.delete('/:idRoute', async (req, res, next)=>{
     const {idRoute} = req.params;
-    DB.query(`select
-            nombre
-            from
-            Routes
-            where
-            idRoute=:idRoute`,
-        {   
-            replacements: {idRoute: idRoute},
-            type: QueryTypes.SELECT
-        }    
-        )
     try{
         let ruta = await Route.findByPk(idRoute)
         if(ruta){
