@@ -28,10 +28,9 @@ router.get('/', async (req, res, next) => {
                     message: `No existen donadores asigndos a esa ruta`,
                 })
             }
-            })
-        .catch((err) => {
+        }).catch((err) => {
             next(err);
-            })
+        })
     }else{
         DB.query(
             `select
