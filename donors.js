@@ -44,6 +44,28 @@ router.get('/', async (req, res, next) => {
     } 
 )
 
+// OBTIENE LA LISTA DE DONADORES PARA POBLAR EL ITEM DONADOR
+router.get('/donorsselect', ( req, res, next ) => {
+    DB.query(
+        `select nombre, idDonor
+        from 
+        donors where deletedAt is NULL`,
+        { nest:true,type: QueryTypes.SELECT})
+    .then((listaDonadores) => {
+        let donadores = []
+        for(let i = 0; i < listaDonadores.length; i++) {
+            donadores.push({value: listaDonadores[i].idDonor, label: listaDonadores[i].nombre})
+        }
+
+        return res.status(200).json({
+            donadores
+            });
+        })
+    .catch((err) => {
+        next(err);
+        })
+})
+
 // GET donador especifico
 router.get('/:idDonor', async (req, res, next) => {
     const { idDonor } = req.params;
