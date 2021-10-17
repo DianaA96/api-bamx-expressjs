@@ -126,7 +126,7 @@ router.get('/enroutedrivers', async(req, res, next) =>{
 
     DB.query(
         `select
-        nombreUsuario,u.nombre,apellidoP,apellidoM,sum(recolectado = 1) as recolectadas,sum(recolectado = 0) as norecolectadas
+        idDriver, nombreUsuario,u.nombre,apellidoP,apellidoM,sum(recolectado = 1) as recolectadas,sum(recolectado = 0) as norecolectadas
         from
         users u join drivers o on u.idUser=o.idDriver
         join collections c using(idDriver)
@@ -147,6 +147,120 @@ router.get('/enroutedrivers', async(req, res, next) =>{
     })
 }
 )
+
+//FALTA IMPLEMENTAR LAS FECHAS EN ESTE ENDPOINT
+// Busca un solo chofer y devuelve las recolecciones realizadas. VISTA GESTION DE OPERADORES EN RUTA
+router.get('/enroutedriver/:idDriver', async(req, res, next) =>{
+
+    let fechaDeHoy = new Date()
+    
+    try {
+        let chofer = await DB.query(
+            `select
+            idDriver, nombreUsuario,u.nombre,apellidoP,apellidoM,sum(recolectado = 1) as recolectadas
+            from
+            users u join drivers o on u.idUser=o.idDriver
+            join collections c using(idDriver)
+            where 
+            fechaRecoleccion is null
+            and idDriver = ${req.params.idDriver}`, 
+            { 
+                type: QueryTypes.SELECT
+            }
+        )
+
+        let recoleccionesRealizadas = await DB.query(
+            `select
+            idDriver,idCollection, nombreUsuario,u.nombre,apellidoP,apellidoM, folio, responsableEntrega, fechaRecoleccion, nota, d.nombre as donador, longitud, latitud
+            from
+            users u join drivers o on u.idUser=o.idDriver
+            join collections c using(idDriver)
+            join donors d using(idDonor)
+            where 
+            fechaRecoleccion is not null and recolectado = 1
+            and idDriver = ${req.params.idDriver}`, 
+            { 
+                type: QueryTypes.SELECT
+            }
+        )
+        
+        if(chofer) {
+            return res.status(200).json({
+                chofer, recoleccionesRealizadas
+            })
+        } else {
+            return res.status(404).json({
+                message: "El chofer que buscas no existe"
+            })
+        }
+
+    } catch(err) {
+        next(err);
+    }
+}
+)
+
+// ENDPOINT QUE MUESTRA TODAS LAS CANTIDADES RECOLECTADAS POR NOTA EN VISTA
+// SEGUIMIENTO DE OPERADORES EN RUTA
+//FALTA IMPLEMENTAR FECHAS
+router.get('/collectedquantitiespernote/:idCollection', async(req, res, next) =>{
+    let fechaDeHoy = new Date()
+    
+    try {
+
+        let notas =
+            {
+                fruta: '',
+                abarrote: '',
+                pan: '',
+                noComestible: ''
+            }
+
+        let notasQuery = await DB.query(
+            `select
+            cq.idCategory, cq.cantidad, idCollection
+            from
+            users u join drivers o on u.idUser=o.idDriver
+            join collections c using(idDriver)
+            join collectedQuantities cq using (idCollection)
+            join donors d using(idDonor)
+            where 
+            fechaRecoleccion is not null and recolectado = 1
+            and idCollection = ${req.params.idCollection}`, 
+            { 
+                type: QueryTypes.SELECT
+            }
+        )
+
+        for(let x = 0; x < notasQuery.length; x++) {
+            if(notasQuery[x].idCategory === 1) {
+                notas.pan = notasQuery[x].cantidad
+            }
+            else if(notasQuery[x].idCategory === 2) {
+                notas.abarrote = notasQuery[x].cantidad
+            }
+            else if(notasQuery[x].idCategory === 3) {
+                notas.fruta = notasQuery[x].cantidad
+            }
+            else if(notasQuery[x].idCategory === 4) {
+                notas.noComestible = notasQuery[x].cantidad
+            }
+        }
+        
+        if(notas) {
+            return res.status(200).json({
+                notas
+            })
+        } else {
+            return res.status(404).json({
+                message: "La nota no tiene cantidades registradas"
+            })
+        }
+
+    } catch(err) {
+        next(err);
+    }
+})
 
 // GET asignar rutas de entrega
 router.get('/assigndeliveries', async(req, res, next) =>{
@@ -218,7 +332,7 @@ router.get('/assigndeliveries', async(req, res, next) =>{
             }
         }
 
-        if(chofer){
+        if(driverData.length > 0){
             return res.status(200).json({
                 chofer
             })
