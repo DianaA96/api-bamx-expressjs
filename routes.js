@@ -335,11 +335,11 @@ router.patch('/:idRoute/donors/', async (req, res, next) => {
         if(rutae){
             let ocupado = await Route.findOne({where:{nombre:route.nombre}}) 
 
-            if(ocupado==null){
+            if(ocupado===null){
                 ocupado = rutae
             }
 
-            if(ocupado.idRoute!=rutae.idRoute){
+            if(ocupado.idRoute!==rutae.idRoute){
                 return res.status(400).json({
                     message: "Ya existe una una ruta con ese nombre",
                 })
