@@ -15,9 +15,9 @@ router.get('/', async (req, res, next) => {
             from
             routes r
             left join donors d on r.idRoute=d.idRoute
-            where r.nombre LIKE "%${req.query.name}%" and r.deletedAt is NULL or d.nombre LIKE "%${req.query.name}%" and d.deletedAt is NULL 
-            or d.municipio LIKE "%${req.query.name}%" and d.deletedAt is NULL or d.calle LIKE "%${req.query.name}%" and d.deletedAt is NULL
-            or d.colonia LIKE "%${req.query.name}%" and d.deletedAt is NULL
+            where r.nombre LIKE "%${req.query.name}%" and r.deletedAt is NULL or d.nombre LIKE "%${req.query.name}%" and d.deletedAt is NULL and r.deletedAt is NULL
+            or d.municipio LIKE "%${req.query.name}%" and d.deletedAt is NULL and r.deletedAt is NULL or d.calle LIKE "%${req.query.name}%" and d.deletedAt is NULL and r.deletedAt is NULL
+            or d.colonia LIKE "%${req.query.name}%" and d.deletedAt is NULL and r.deletedAt is NULL
             group by nombre order by r.createdAt desc;`,
             { 
                nest:true, 
@@ -45,6 +45,7 @@ router.get('/', async (req, res, next) => {
             from
             routes r
             left join donors d on r.idRoute=d.idRoute
+            where r.deletedAt is NULL
             group by nombre order by r.nombre ${req.query.order};`,
             { 
                nest:true, 
@@ -52,7 +53,7 @@ router.get('/', async (req, res, next) => {
             }
         )
         .then((rutas) => {
-            if(rutas) {
+            if(rutas=!'') {
                 return res.status(200).json({
                     rutas
                 });
@@ -72,6 +73,7 @@ router.get('/', async (req, res, next) => {
             from
             routes r
             left join donors d on r.idRoute=d.idRoute
+            where r.deletedAt is NULL
             group by nombre order by count(r.idRoute) ${req.query.donors};`,
             { 
                nest:true, 
@@ -79,7 +81,7 @@ router.get('/', async (req, res, next) => {
             }
         )
         .then((rutas) => {
-            if(rutas) {
+            if(rutas!='') {
                 return res.status(200).json({
                     rutas
                 });
@@ -99,6 +101,7 @@ router.get('/', async (req, res, next) => {
             from
             routes r
             join donors d using(idRoute)
+            where r.deletedAt is NULL
             group by nombre
             having
             puntosRecoleccion=${req.query.numberDonors}`,
@@ -108,7 +111,7 @@ router.get('/', async (req, res, next) => {
             }
         )
         .then((rutas) => {
-            if(rutas) {
+            if(rutas=!'') {
                 return res.status(200).json({
                     rutas
                 });
@@ -128,6 +131,7 @@ router.get('/', async (req, res, next) => {
             from
             routes r
             left join donors d on r.idRoute=d.idRoute
+            where r.deletedAt is NULL
             group by nombre order by r.createdAt desc;`,
             { 
                nest:true, 
@@ -135,7 +139,7 @@ router.get('/', async (req, res, next) => {
             }
         )
         .then((rutas) => {
-            if(rutas) {
+            if(rutas!='') {
                 return res.status(200).json({
                     rutas
                 });
