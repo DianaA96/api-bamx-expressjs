@@ -70,6 +70,7 @@ router.post('/', async (req, res, next)=>{
                     cantidad: delivered.ent4.cantidad}
                     )
             }
+            
             return res.status(200).json({
                 entrega: delivery,
                 entregado1: delivered.ent1,
