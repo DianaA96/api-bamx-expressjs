@@ -18,14 +18,21 @@ router.get('/', async (req, res, next) => {
             donors where deletedAt is NULL and idRoute = ${req.query.route}`,
             { nest:true,type: QueryTypes.SELECT})
         .then((listaDonadores) => {
-            return res.status(200).json({
-                listaDonadores
+            if(listaDonadores!=''){
+                return res.status(200).json({
+                    listaDonadores
                 });
+            }else{
+                return res.status(404).json({
+                    name:"Not found",
+                    message: `No existen donadores asigndos a esa ruta`,
+                })
+            }
             })
         .catch((err) => {
             next(err);
             })
-    }   else {
+    }else{
         DB.query(
             `select
             *
@@ -33,10 +40,17 @@ router.get('/', async (req, res, next) => {
             donors where deletedAt is NULL`,
             { nest:true,type: QueryTypes.SELECT})
         .then((listaDonadores) => {
-            return res.status(200).json({
-                listaDonadores
+            if(listaDonadores!=''){
+                return res.status(200).json({
+                    listaDonadores
                 });
-            })
+            }else{
+                return res.status(404).json({
+                    name:"Not found",
+                    message: `Aun no tienes donarores registrados`,
+                })
+            }
+        })
         .catch((err) => {
             next(err);
             })
@@ -87,6 +101,7 @@ router.get('/:idDonor', async (req, res, next) => {
             }
             else{
                 return res.status(404).json({
+                    name: "Not found",
                     message: `No existe un donador con esta información`,
                 })
             }
@@ -117,6 +132,7 @@ router.post('/', async (req, res, next) => {
         })
         if(donador || mismadireccion){
             return res.status(400).json({
+                name: "Not found",
                 message: `Ya existe un donador con estos datos `,
             })
         }
@@ -173,7 +189,7 @@ router.patch('/:idDonor', async (req, res, next) => {
         } else {
             return res.status(404).json({
                 name: "Not Found",
-                message: "El operador que intentas actualizar no existe"
+                message: "El donador que intentas actualizar no existe"
                 })
             }
         } catch(err) {
@@ -225,7 +241,7 @@ router.patch('/collected/collections', async(req, res, next) => {
     }
 })
 
-//eliminar Usuarios
+//Eliminar Donador
 router.delete('/:idDonor', async (req, res, next)=>{
     const {idDonor} = req.params;
     try{
@@ -238,7 +254,7 @@ router.delete('/:idDonor', async (req, res, next)=>{
         }else{
             return res.status(404).json({
                 name: "Not found",
-                message: "El donador que intenas eliminar no existe"
+                message: "El donador que intentas eliminar no existe"
             })
         }
     }catch(err){
