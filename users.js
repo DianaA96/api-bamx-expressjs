@@ -4,7 +4,7 @@ const router = express.Router();
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const {QueryTypes} = require('sequelize');
-const {Receiver, TrafficCoordinator, Warehouse} = require('./database');
+const {Receiver, TrafficCoordinator, Warehouse, Admin} = require('./database');
 const {User, Driver} = require('./database');
 
 // Destructuramos los modelos requeridos en las consultas que incluyen raw queries de SQL
@@ -178,6 +178,56 @@ router.get('/:idUser',async (req, res, next) => {
     )
 })
 
+//endpoint crear ADMINISTRADORES
+router.post('/admins/', async (req, res, next) => {
+    console.log(req.body)
+    const { user, admin } = req.body
+    let usuarioAdministrador =  user
+    try {
+        let usuario = await User.findOne({
+            where: {telefono: user.telefono},
+            where: {email: user.email},
+            where: {nombreUsuario: user.nombreUsuario},
+        })
+        if(usuario) {
+            return res.status(400).json({
+                message: "Lo sentimos, este administrador ya existe",
+            })
+        }
+
+        let contrasenaNueva = await bcrypt.hash(usuarioAdministrador.contrasena, 10)
+
+        usuario = {...usuarioAdministrador, contrasena: contrasenaNueva}
+
+        await User.create(usuario)
+        .then((a)=>{
+            Admin.create({
+                idAdmin: a.idUser,
+            })
+        })   
+
+        let {idAdmin, contrasena,nombreUsuario, nombre, apellidoP, apellidoM, email, telefono} = usuarioAdministrador
+        
+        const payload = {
+            idUser: usuario.idUser,
+        }
+
+        jwt.sign(
+            payload,
+            process.env.AUTH_SECRET,
+            { expiresIn: 10800 },
+            (err, token) => {
+                return res.status(201).json({
+                    data: token,
+                });
+            }
+        )
+    } catch(err) {
+        next(err);
+        }
+    }
+)
+
 //endpoint crear COORDINADORES
 router.post('/trafficCoordinators/', async (req, res, next) => {
     console.log(req.body)
@@ -206,7 +256,7 @@ router.post('/trafficCoordinators/', async (req, res, next) => {
             })
         })   
 
-        let {idTrafficCoordinator, contrasena,nombreUsuairo, nombre, apellidoP, apellidoM, email, telefono} = usuarioCoordinador
+        let {idTrafficCoordinator, contrasena,nombreUsuario, nombre, apellidoP, apellidoM, email, telefono} = usuarioCoordinador
         const payload = {
             idUser: usuario.idUser,
         }
