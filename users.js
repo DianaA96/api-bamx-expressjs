@@ -176,7 +176,6 @@ router.post('/trafficCoordinators/', async (req, res, next) => {
             { expiresIn: 10800 },
             (err, token) => {
                 return res.status(201).json({
-                    trafficCoordinator,
                     data: token,
                 });
             }
@@ -209,7 +208,7 @@ router.post('/drivers/', async (req, res, next) => {
                 message: "Lo sentimos, la cuenta ya existe",
             })
         }
-
+        console.log(usuarioOperador.contrasena)
         let contrasenaNueva = await bcrypt.hash(usuarioOperador.contrasena, 10)
 
         usuario = {...usuarioOperador, contrasena: contrasenaNueva}
@@ -234,7 +233,6 @@ router.post('/drivers/', async (req, res, next) => {
             { expiresIn: 10800 },
             (err, token) => {
                 return res.status(201).json({
-                    driver,
                     data: token,
                 });
             }
@@ -288,7 +286,6 @@ router.post('/receivers/', async (req, res, next) => {
             { expiresIn: 10800 },
             (err, token) => {
                 return res.status(201).json({
-                    receiver,
                     data: token,
                 });
             }
@@ -300,7 +297,7 @@ router.post('/receivers/', async (req, res, next) => {
 )
 
 //patch OERADORES **cambiar a drivers**
-router.patch('/:idUser/operators/', async (req, res, next) => {
+router.patch('/:idUser/drivers/', async (req, res, next) => {
 
     const { idUser } = req.params;
     const { user, driver } = req.body;
@@ -456,37 +453,65 @@ router.patch('/:idUser/receivers/', async (req, res, next) => {
     }
 )
 
-//Endpoint para validar las credenciales con bcrypt
-/*
-router.post('/login', async (req, res, next)=> {
-    const { body } = req.body;
 
-    try {
+router.post('/login', async (req, res, next)=> {
+    const { body } = req;
+    let roles={}
+    let rol = "";
+
+    try{
         const user = await User.findOne({
             where: {
-                email: body.email,
+                nombreUsuario: body.nombreUsuario,
             }
         })
 
         if (!user) {
             return res.status(401).json({
-                data: 'Credenciales no válidas',
+                data: 'Usuario no encontrado',
             })
         }
 
         const isMatch = await bcrypt.compare(
             body.contrasena,
-            user.contrasena,
+            user.contrasena
         )
+
 
         if (!isMatch) {
             return res.status(401).json({
-                data: 'Credenciales no válidas',
+                data:  user,
             })
         }
 
+        
+        let listaRoles = await DB.query(
+            `select
+            idAdmin,idDriver,idReceiver,idTrafficCoordinator
+            from users u
+            left join admins a on a.idAdmin=u.idUser
+            left join drivers d on d.idDriver=u.idUser
+            left join receivers r on r.idReceiver=u.idUser
+            left join trafficCoordinators t on t.idTrafficCoordinator=u.idUser
+            where nombreUsuario='${body.nombreUsuario}'`
+            ,{nest:true,type: QueryTypes.SELECT}
+        )
+        
+            
+        if(listaRoles[0].idDriver!=null){
+            rol='operador'
+        }
+        if(listaRoles[0].idReceiver!=null){
+            rol='receptor'
+        }
+        if(listaRoles[0].idTrafficCoordinator!=null){
+            rol='trafico'
+        }
+        if(listaRoles[0].idAdmin!=null){
+            rol='admin'
+        }
         const payload = {
-            idUser: user.idUser,
+            idUser: user.idUser
         }
 
         jwt.sign(
@@ -496,16 +521,16 @@ router.post('/login', async (req, res, next)=> {
             (err, token) => {
                 console.log(token)
                 return res.status(201).json({
-                    data: token,
+                    data: token,rol
                 });
             }
         )
-
-    } catch (error) {
-    
     }
+    catch (error) {
+        next(error)
+    }
+        
 })
-*/
 
 //eliminar Usuarios
 router.delete('/:idUser', async (req, res, next)=>{
