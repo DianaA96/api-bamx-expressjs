@@ -8,7 +8,9 @@ const {DB}  = require('./database')
 // GET lista de entregas
 router.get('/:idReceiver', async (req, res, next) => {
     const { idReceiver } = req.params
-    let fechaDeHoy = new Date().toJSON()
+
+    let fechaDeHoy = new Date()
+
     DB.query(
         `select u.nombre,w.nombre,u2.nombre,u2.apellidoP,placa,cantidad
         from
@@ -20,7 +22,7 @@ router.get('/:idReceiver', async (req, res, next) => {
         join users u2 on u2.idUser=o.idDriver
         join collections c on c.idCollection=o.idDriver
         join vehicles on vehicles.idVehicle=c.idCollection
-        where fecha="${fechaDeHoy}" and  idReceiver=:idReceiver`,
+        where fecha='${(fechaDeHoy.toISOString().slice(0, 19).replace('T', ' ')).slice(0, 10)}' and  idReceiver=:idReceiver`,
         { 
             replacements: {idReceiver: idReceiver},
             type: QueryTypes.SELECT

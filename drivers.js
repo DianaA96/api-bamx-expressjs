@@ -10,6 +10,8 @@ const {User, Driver, CollectedQuantity, Collection} = require('./database');
 router.get('/', async (req, res, next) => {
 
     let fechaDeHoy = new Date()
+    console.log((fechaDeHoy.toISOString().slice(0, 19).replace('T', ' ')).slice(0, 10))
+
     if(req.query.name) {
         DB.query(
         `
@@ -23,7 +25,7 @@ router.get('/', async (req, res, next) => {
         o.idDriver
         from 
         drivers o left join collections c on o.idDriver=c.idDriver
-        where c.idDriver is null or ((date(fechaRecoleccion) != '${fechaDeHoy.toISOString().slice(0, 19).replace('T', ' ')}') and fechaRecoleccion is not null))
+        where c.idDriver is null or ((date(fechaRecoleccion) = '${(fechaDeHoy.toISOString().slice(0, 19).replace('T', ' ')).slice(0, 10)}') and date(fechaRecoleccion) is not null))
         and nombre LIKE "%${req.query.name}%" or u.deletedAt is NULL and apellidoP LIKE "%${req.query.name}%" or u.deletedAt is NULL and apellidoM LIKE "%${req.query.name}%" or u.deletedAt is NULL and nombreUsuario LIKE "%${req.query.name}%"
         `, { type: Sequelize.QueryTypes.SELECT }
         )
@@ -56,7 +58,7 @@ router.get('/', async (req, res, next) => {
             o.idDriver
             from 
             drivers o left join collections c on o.idDriver=c.idDriver
-            where c.idDriver is null or ((date(fechaRecoleccion) != '${fechaDeHoy.toISOString().slice(0, 19).replace('T', ' ')}') and fechaRecoleccion is not null))
+            where c.idDriver is null or ((date(fechaRecoleccion) = '${(fechaDeHoy.toISOString().slice(0, 19).replace('T', ' ')).slice(0, 10)}') and date(fechaRecoleccion) is not null))
             order by nombre ${req.query.order};
             `, { type: Sequelize.QueryTypes.SELECT }
             )
@@ -89,7 +91,7 @@ router.get('/', async (req, res, next) => {
             o.idDriver
             from 
             drivers o left join collections c on o.idDriver=c.idDriver
-            where c.idDriver is null or ((date(fechaRecoleccion) != '${fechaDeHoy.toISOString().slice(0, 19).replace('T', ' ')}') and fechaRecoleccion is not null))
+            where c.idDriver is null or ((date(fechaRecoleccion) = '${(fechaDeHoy.toISOString().slice(0, 19).replace('T', ' ')).slice(0, 10)}') and date(fechaRecoleccion) is not null))
             `, { type: Sequelize.QueryTypes.SELECT }
             )
             .then((listaUsuarios) => {
@@ -121,7 +123,7 @@ router.get('/assignedWarehouses/:idDriver', async (req, res, next) => {
         join warehousesAssignations wa using(idDriver)
         join warehouses w using(idWarehouse)
         join assignedQuantities aq on aq.idWarehousesAssignation=wa.idWarehousesAssignation
-        where fecha="${fechaDeHoy.toISOString().slice(0, 19).replace('T', ' ')}" and idDriver=:idDriver`,
+        where fecha="${(fechaDeHoy.toISOString().slice(0, 19).replace('T', ' ')).slice(0, 10)}" and idDriver=:idDriver`,
         { 
             replacements: {idDriver:idDriver},
             type: QueryTypes.SELECT
@@ -152,12 +154,13 @@ router.get('/enroutedrivers', async(req, res, next) =>{
     let fechaDeHoy = new Date()
     DB.query(
         `select
-        idDriver, nombreUsuario,u.nombre,apellidoP,apellidoM,sum(recolectado = 1) as recolectadas,sum(recolectado = 0) as norecolectadas
+        idDriver, nombreUsuario,u.nombre,apellidoP,apellidoM,
+        sum(recolectado = 1) as recolectadas,sum(recolectado = 0) as norecolectadas
         from
         users u join drivers o on u.idUser=o.idDriver
         join collections c using(idDriver)
         where 
-        fechaRecoleccion is null
+        date(fechaAsignacion) = '${(fechaDeHoy.toISOString().slice(0, 19).replace('T', ' ')).slice(0, 10)}'
         group by idDriver`, 
         { 
             type: QueryTypes.SELECT
@@ -299,6 +302,9 @@ router.get('/collectedquantitiespernote/:idCollection', async(req, res, next) =>
 router.get('/assigndeliveries', async(req, res, next) =>{
 
     try {
+
+        let fechaDeHoy = new Date()
+
         // Raw SQL Query
         let driverData = await DB.query(
             `select
@@ -308,7 +314,7 @@ router.get('/assigndeliveries', async(req, res, next) =>{
             join collections c using(idDriver)
             join collectedQuantities using(idCollection)
             join categories using(idCategory)
-            where date(fechaRecoleccion) is null
+            where date(fechaRecoleccion) = '${(fechaDeHoy.toISOString().slice(0, 19).replace('T', ' ')).slice(0, 10)}' and fechaRecoleccion is not null
             group by idCategory
             `,
             { type: QueryTypes.SELECT })
@@ -324,7 +330,7 @@ router.get('/assigndeliveries', async(req, res, next) =>{
         }
         ]
         let aux
-
+        
         for (let i = 0; i < driverData.length; i++) {
             if(idChofer !== driverData[i].idDriver) {
                 idChofer = driverData[i].idDriver
@@ -336,7 +342,7 @@ router.get('/assigndeliveries', async(req, res, next) =>{
                     join collections c using(idDriver)
                     join collectedQuantities using(idCollection)
                     join categories using(idCategory)
-                    where date(fechaRecoleccion) is null
+                    where date(fechaRecoleccion) = '${(fechaDeHoy.toISOString().slice(0, 19).replace('T', ' ')).slice(0, 10)}' and fechaRecoleccion is not null
                     group by idDriver
                     `, 
                     { type: QueryTypes.SELECT })
@@ -356,7 +362,7 @@ router.get('/assigndeliveries', async(req, res, next) =>{
                     join collections c using(idDriver)
                     join collectedQuantities using(idCollection)
                     join categories using(idCategory)
-                    where date(fechaRecoleccion) is null
+                    where date(fechaRecoleccion) = '${(fechaDeHoy.toISOString().slice(0, 19).replace('T', ' ')).slice(0, 10)}' and fechaRecoleccion is not null
                     group by idCategory
                     `, 
                     { type: QueryTypes.SELECT })

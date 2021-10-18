@@ -47,7 +47,7 @@ router.get('/', async (req, res, next) => {
             }else{
                 return res.status(404).json({
                     name:"Not found",
-                    message: `Aun no tienes donarores registrados`,
+                    message: `Aun no tienes donadores registrados`,
                 })
             }
         })
