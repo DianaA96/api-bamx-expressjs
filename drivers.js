@@ -3,6 +3,7 @@ const express = require('express');
 const  {QueryTypes, Sequelize} = require('sequelize');
 const router = express.Router();
 const {DB}  = require('./database')
+var moment = require('moment-timezone');
 const {User, Driver, CollectedQuantity, Collection} = require('./database');
 
 // ASIGNAR RUTAS DE RECOLECCIÓN. [GET]. OBTIENE LA LISTA DE LOS USUARIOS A LOS QUE NO SE LES HAN
@@ -392,7 +393,7 @@ router.get('/assigndeliveries', async(req, res, next) =>{
 router.get('/assignedwarehouses/:idDriver', async(req, res, next) =>{
     
     const { idDriver } = req.params
-    let fechaDeHoy = new Date()
+    let fechaDeHoy = moment.tz(moment(), 'America/Mexico_city').format('YYYY-MM-DD')
 
     try {
         let warehouseData = await DB.query(
@@ -404,7 +405,7 @@ router.get('/assignedwarehouses/:idDriver', async(req, res, next) =>{
             join assignedQuantities using(idWarehousesAssignation)
             join categories c using(idCategory)
             join warehouses w on w.idWarehouse=wa.idWarehouse
-            where date(fecha)='${(fechaDeHoy.toISOString().slice(0, 19).replace('T', ' ')).slice(0, 10)}' and idDriver=${idDriver}`,
+            where date(fecha)='${fechaDeHoy}' and idDriver=${idDriver}`,
             { type: QueryTypes.SELECT }
         )
         
