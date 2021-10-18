@@ -112,7 +112,7 @@ router.get('/', async (req, res, next) => {
     }
 })
 
-// GET bodegas asignadas
+/* // GET bodegas asignadas
 router.get('/assignedWarehouses/:idDriver', async (req, res, next) => {
     const { idDriver } = req.params
     let fechaDeHoy = new Date()
@@ -145,7 +145,7 @@ router.get('/assignedWarehouses/:idDriver', async (req, res, next) => {
         next(err);
     })
 }
-)
+) */
 
 // GET operadores GESTIÓN DE OPERADORES EN RUTA // AÑADIR LA FECHA COMO PARÁMETRO DE BÚSQUEDA
 // obtiene el nombre, nombreUsuario, idDriver y número de recolecciones COMPLETAS asignadas el día de hoy y ASIGNADAS el día de hoy
@@ -388,5 +388,84 @@ router.get('/assigndeliveries', async(req, res, next) =>{
     }
 }
 )
+
+// GET asignar bodegas
+router.get('/assignedwarehouses/:idDriver', async(req, res, next) =>{
+    
+    const { idDriver } = req.params
+    let fechaDeHoy = new Date()
+
+    try {
+        let warehouseData = await DB.query(
+            `select
+            u.nombre,u.apellidoP,w.idWarehouse,u.apellidoM,w.nombre as Bodega,cp,municipio,colonia,calle,numExterior,c.nombre as cosa,cantidad
+            from
+            users u join drivers o on u.idUser=o.idDriver
+            join warehousesAssignations wa using(idDriver)
+            join assignedQuantities using(idWarehousesAssignation)
+            join categories c using(idCategory)
+            join warehouses w on w.idWarehouse=wa.idWarehouse
+            where date(fecha)='${(fechaDeHoy.toISOString().slice(0, 19).replace('T', ' ')).slice(0, 10)}' and idDriver=${idDriver}`,
+            { type: QueryTypes.SELECT }
+        )
+        
+        let auxBodega = {
+            bodega: '',
+            calle: '',
+            numExterior: '',
+            colonia: '',
+            municipio: '',
+            cp: '',
+            fruta: '',
+            abarrote: '',
+            pan: '',
+            noComestible: ''
+        }
+
+        let idWarehouseIt = -1
+        let data = []
+        for (let x = 0; x < warehouseData.length; x++) {
+            if (warehouseData[x].idWarehouse !== idWarehouseIt) {
+                idWarehouseIt = warehouseData[x].idWarehouse
+                auxBodega.calle = warehouseData[x].calle
+                auxBodega.numExterior = warehouseData[x].numExterior
+                auxBodega.colonia = warehouseData[x].colonia
+                auxBodega.municipio = warehouseData[x].municipio
+                auxBodega.cp = warehouseData[x].cp
+                auxBodega.bodega = warehouseData[x].Bodega
+
+                for (let o = 0; o < warehouseData.length; o++) {
+                    if(warehouseData[o].cosa === 'Pan' && idWarehouseIt === warehouseData[o].idWarehouse ) {
+                        auxBodega.pan = warehouseData[o].cantidad
+                    }
+                    else if (warehouseData[o].cosa === 'Abarrote' && idWarehouseIt === warehouseData[o].idWarehouse ) {
+                        auxBodega.abarrote = warehouseData[o].cantidad
+                    }
+                    else if (warehouseData[o].cosa === 'Frutas y verduras' && idWarehouseIt === warehouseData[o].idWarehouse ) {
+                        auxBodega.fruta = warehouseData[o].cantidad
+                    }
+                    else if (warehouseData[o].cosa === 'No comestible'&& idWarehouseIt === warehouseData[o].idWarehouse ) {
+                        auxBodega.noComestible = warehouseData[o].cantidad
+                    } 
+                }
+                data.push(auxBodega)
+                auxBodega = {}           
+            }
+        }
+
+        if(warehouseData){
+            return res.status(200).json({
+                data
+            })
+        } else {
+            return res.status(400).json({
+                message: "No hay bodegas asignadas"
+            })
+        }
+
+    } catch(err) {
+        next(err);
+    }
+})
 
 module.exports = router

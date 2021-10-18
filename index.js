@@ -170,19 +170,19 @@ app.get('/assigneddeliveries/:idReceiver', async (req, res, next) => {
                 auxChofer.nombreUsuario = driverData[i].nombreUsuario
                 auxChofer.modelo = driverData[i].modelo
                
-                for (let i = 0; i < driverData.length; i++) {
+                for (let o = 0; o < driverData.length; o++) {
 
-                    if(driverData[i].categoria === 'Pan' && idChofer === driverData[i].idDriver ) {
-                        auxChofer.pan = driverData[i].CantidadaEntregar
+                    if(driverData[o].categoria === 'Pan' && idChofer === driverData[o].idDriver ) {
+                        auxChofer.pan = driverData[o].CantidadaEntregar
                     }
-                    else if (driverData[i].categoria === 'Abarrote' && idChofer === driverData[i].idDriver ) {
-                        auxChofer.abarrote = driverData[i].CantidadaEntregar
+                    else if (driverData[o].categoria === 'Abarrote' && idChofer === driverData[o].idDriver ) {
+                        auxChofer.abarrote = driverData[o].CantidadaEntregar
                     }
-                    else if (driverData[i].categoria === 'Frutas y verduras' && idChofer === driverData[i].idDriver ) {
-                        auxChofer.fruta = driverData[i].CantidadaEntregar
+                    else if (driverData[o].categoria === 'Frutas y verduras' && idChofer === driverData[o].idDriver ) {
+                        auxChofer.fruta = driverData[o].CantidadaEntregar
                     }
-                    else if (driverData[i].categoria === 'No comestible'&& idChofer === driverData[i].idDriver ) {
-                        auxChofer.noComestible = driverData[i].CantidadaEntregar
+                    else if (driverData[o].categoria === 'No comestible'&& idChofer === driverData[o].idDriver ) {
+                        auxChofer.noComestible = driverData[o].CantidadaEntregar
                     } 
                 }
                 data.push(auxChofer)
