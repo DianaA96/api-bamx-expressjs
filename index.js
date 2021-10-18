@@ -127,6 +127,8 @@ app.get('/assigneddeliveries/:idReceiver', async (req, res, next) => {
 
     const { idReceiver } = req.params;
     let fechaDeAyer = new Date((new Date()). valueOf() - 1000*60*60*24)
+    let fechaDeHoy = new Date()
+
 
     try {
         // Raw SQL Query
@@ -141,7 +143,7 @@ app.get('/assigneddeliveries/:idReceiver', async (req, res, next) => {
             join collections c on c.idDriver=o.idDriver
             join vehicles using(idVehicle)
             join warehouses w on w.idWarehouse=wa.idWarehouse
-            where date(fecha)='2021-10-13' and
+            where date(fecha) = '${(fechaDeHoy.toISOString().slice(0, 19).replace('T', ' ')).slice(0,10)}' and
             idReceiver=${idReceiver}
             `,
             { type: QueryTypes.SELECT })
