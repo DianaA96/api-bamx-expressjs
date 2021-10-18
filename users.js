@@ -23,9 +23,16 @@ router.get('/', async (req, res, next) => {
             and nombre LIKE "%${req.query.name}%" or u.deletedAt is NULL and apellidoP LIKE "%${req.query.name}%" or u.deletedAt is NULL and apellidoM LIKE "%${req.query.name}%" or u.deletedAt is NULL and idUser LIKE "%${req.query.name}%"`
             ,{nest:true,type: QueryTypes.SELECT}
         ).then((listaUsuarios) => {
-            return res.status(200).json({
-                listaUsuarios
-            });
+            if(listaUsuarios!=''){
+                return res.status(200).json({
+                    listaUsuarios
+                });
+            }else{
+                return res.status(404).json({
+                    name: 'Not Found',
+                    message: 'No existen usuarios registrados'
+                })
+            }
         })
         .catch((err) => {
             next(err);
@@ -45,9 +52,16 @@ router.get('/', async (req, res, next) => {
             order by nombre ${req.query.order}`
             ,{nest:true,type: QueryTypes.SELECT}
         ).then((listaUsuarios) => {
-            return res.status(200).json({
-                listaUsuarios
-            });
+            if(listaUsuarios!=''){
+                return res.status(200).json({
+                    listaUsuarios
+                });
+            }else{
+                return res.status(404).json({
+                    name: 'Not Found',
+                    message: 'No existen usuarios registrados'
+                })
+            }
         })
         .catch((err) => {
             next(err);
@@ -64,9 +78,16 @@ router.get('/', async (req, res, next) => {
             left join trafficCoordinators t on u.idUser=t.idTrafficCoordinator where u.deletedAt is NULL`
             ,{nest:true,type: QueryTypes.SELECT}
         ).then((listaUsuarios) => {
-            return res.status(200).json({
-                listaUsuarios
-            });
+            if(listaUsuarios!=''){
+                return res.status(200).json({
+                    listaUsuarios
+                });
+            }else{
+                return res.status(404).json({
+                    name: 'Not Found',
+                    message: 'No existen usuarios registrados'
+                })
+            }
         })
         .catch((err) => {
             next(err);
@@ -78,16 +99,22 @@ router.get('/', async (req, res, next) => {
 router.get('/receivers', async (req, res, next) => {
     DB.query(
         `select
-        nombreUsuario,nombre,apellidoM,apellidoP,idReceiver
+        nombreUsuario,nombre,apellidoP,apellidoM,idUser
         from
-        users u left join drivers o on u.idUser=o.idDriver
-        left join receivers r on r.idReceiver=u.idUser
-        left join trafficCoordinators t on u.idUser=t.idTrafficCoordinator where u.deletedAt is NULL`,
+        users u left join receivers r on r.idReceiver=u.idUser
+        where idReceiver is not null and u.deletedAt is NULL`,
         { type: QueryTypes.SELECT})
     .then((listaReceptores) => {
-        return res.status(200).json({
-            listaReceptores
-        });
+        if(listaReceptores!=''){
+            return res.status(200).json({
+                listaReceptores
+            });
+        }else{
+            return res.status(404).json({
+                name: 'Not Found',
+                message: 'No existen receptores registrados'
+            })
+        }
     })
     .catch((err) => {
         next(err);
@@ -98,23 +125,29 @@ router.get('/receivers', async (req, res, next) => {
 router.get('/trafficCoordinators', async (req, res, next) => {
     DB.query(
         `select
-        nombre,apellidoM,apellidoP,idDriver,idReceiver,idTrafficCoordinator
+        nombreUsuario,nombre,apellidoM,apellidoP,idTrafficCoordinator
         from
-        users u left join drivers o on u.idUser=o.idDriver
-        left join receivers r on r.idReceiver=u.idUser
-        left join trafficCoordinators t on u.idUser=t.idTrafficCoordinator where u.deletedAt is NULL`,
+        users u left join trafficCoordinators t on u.idUser=t.idTrafficCoordinator
+        where idTrafficCoordinator is not null and u.deletedAt is NULL`,
         { type: QueryTypes.SELECT})
     .then((listaCoordinadores) => {
-        return res.status(200).json({
-            listaCoordinadores
-        });
+        if(listaCoordinadores!=''){
+            return res.status(200).json({
+                listaCoordinadores
+            });
+        }else{
+            return res.status(404).json({
+                name: 'Not Found',
+                message: 'No existen coordinadores registrados'
+            })
+        }
     })
     .catch((err) => {
         next(err);
     })
 })
 
-//obtener los datos de un usuaario especifico *falta agregar el puesto
+//obtener los datos de un usuaario especifico
 router.get('/:idUser',async (req, res, next) => {
     const { idUser } = req.params;
     DB.query(
@@ -129,9 +162,16 @@ router.get('/:idUser',async (req, res, next) => {
         replacements: {idUser: idUser},
         type: QueryTypes.SELECT
     }).then((datosUsuario) => {
-        return res.status(200).json({
-            datosUsuario
-        });
+        if(datosUsuario!=''){
+            return res.status(200).json({
+                datosUsuario
+            })
+        }else{
+            return res.status(404).json({
+                name: 'Not Found',
+                message: 'El usuario no se encontró'
+            })
+        }
     })
     .catch (
         (err) => next(err)
@@ -296,34 +336,49 @@ router.post('/receivers/', async (req, res, next) => {
     }
 )
 
-//patch OERADORES **cambiar a drivers**
+//patch OERADORES 
 router.patch('/:idUser/drivers/', async (req, res, next) => {
 
     const { idUser } = req.params;
     const { user, driver } = req.body;
-
     try{
-        let usuario = await User.findByPk(idUser)
-        let operador = await Driver.findByPk(idUser)
+        let usuarioe = await User.findByPk(idUser)//obtiene los datos del operador seleccionado
+        
+        //coincidendia de nombreUsuario
+        let ocupado = await User.findOne({where:{nombreUsuario:user.nombreUsuario}}) 
+        if(ocupado==null){
+            ocupado = usuarioe
+        }
+        //coincidencia de licencia
+        let licenciaExiste = await Driver.findOne({where:{licencia:driver.licencia}})
+        if(licenciaExiste==null){
+            licenciaExiste = usuarioe
+        }
+        //coincidencia de email
+        let correoe = await User.findOne({where:{email:user.email}})
+        if(correoe==null){
+            correoe = usuarioe
+        }
+        //coincidencia de telefono
+        let tel = await User.findOne({where:{telefono:user.telefono}})
+        if(tel==null){
+            tel = usuarioe
+        }
+
+        if((ocupado.idUser!=usuarioe.idUser)||(licenciaExiste.idUser!=usuarioe.idUser)||(tel.idUser!=usuarioe.idUser)||(correoe.idUser!=usuarioe.idUser)){//verifica si la licencia, nombreUsuario,telefono o email pertenecen a otro usuario 
+            return res.status(400).json({
+                name: "Bad request",
+                message: "Los datos que intentas asignar ya pertenecen a otro usuario u operador"
+            })
+        }else{
+            let operador = await Driver.findByPk(idUser)
+            let usuario = await User.findByPk(idUser)
     
-        if(usuario && operador) {
-            await usuario.update(user)
-            await operador.update(driver)
-            
-            let {
-                idUser,
-                nombre,
-                apellidoP,
-                apellidoM,
-                nombreUsuario,
-                telefono,
-                email
-            } = usuario
-
-            let {licencia,  vencimientoLic}= operador
-
-            return res.status(200).json({
-                usuarioActualizado: {
+            if(usuario && operador) {
+                await usuario.update(user)
+                await operador.update(driver)
+                
+                let {
                     idUser,
                     nombre,
                     apellidoP,
@@ -331,32 +386,71 @@ router.patch('/:idUser/drivers/', async (req, res, next) => {
                     nombreUsuario,
                     telefono,
                     email
-                },
-                operadorActualizado:{
-                    licencia,  
-                    vencimientoLic
-                }
-            })
-        } else {
-            return res.status(404).json({
-                name: "Not Found",
-                message: "El operador que intentas actualizar no existe"
+                } = usuario
+    
+                let {licencia,  vencimientoLic}= operador
+    
+                return res.status(200).json({
+                    usuarioActualizado: {
+                        idUser,
+                        nombre,
+                        apellidoP,
+                        apellidoM,
+                        nombreUsuario,
+                        telefono,
+                        email
+                    },
+                    operadorActualizado:{
+                        licencia,  
+                        vencimientoLic
+                    }
                 })
-            }
+            } else {
+                    return res.status(404).json({
+                    name: "Not Found",
+                    message: "El operador que intentas actualizar no existe"
+                    })
+                }
+        }
         } catch(err) {
             next(err);
         }
     }
 )
 
-//patch OERADORES 
+//patch COORDINADORES 
 router.patch('/:idUser/trafficCoordinators/', async (req, res, next) => {
 
     const { idUser } = req.params;
     const { user, trafficCoordinator } = req.body;
 
     try{
-        let usuario = await User.findByPk(idUser)
+
+        let usuarioe = await User.findByPk(idUser)//obtiene los datos del operador seleccionado
+        
+        //coincidendia de nombreUsuario
+        let ocupado = await User.findOne({where:{nombreUsuario:user.nombreUsuario}}) 
+        if(ocupado==null){
+            ocupado = usuarioe
+        }
+        //coincidencia de email
+        let correoe = await User.findOne({where:{email:user.email}})
+        if(correoe==null){
+            correoe = usuarioe
+        }
+        //coincidencia de telefono
+        let tel = await User.findOne({where:{telefono:user.telefono}})
+        if(tel==null){
+            tel = usuarioe
+        }
+
+        if((ocupado.idUser!=usuarioe.idUser)||(tel.idUser!=usuarioe.idUser)||(correoe.idUser!=usuarioe.idUser)){//verifica si la licencia, nombreUsuario,telefono o email pertenecen a otro usuario 
+            return res.status(400).json({
+                name: "Bad request",
+                message: "Los datos que intentas asignar ya pertenecen a otro usuario"
+            })
+        }else{
+            let usuario = await User.findByPk(idUser)
         let coordinador = await TrafficCoordinator.findByPk(idUser)
     
         if(usuario && coordinador) {
@@ -392,9 +486,10 @@ router.patch('/:idUser/trafficCoordinators/', async (req, res, next) => {
         } else {
             return res.status(404).json({
                 name: "Not Found",
-                message: "El operador que intentas actualizar no existe"
+                message: "El coordinador que intentas actualizar no existe"
                 })
             }
+        }
         } catch(err) {
             next(err);
         }
@@ -405,30 +500,43 @@ router.patch('/:idUser/trafficCoordinators/', async (req, res, next) => {
 router.patch('/:idUser/receivers/', async (req, res, next) => {
 
     const { idUser } = req.params;
-    const { user, receiver } = req.body;
-
+    const { user, warehouses } = req.body;
+     
     try{
-        let usuario = await User.findByPk(idUser)
-        let receptor = await Receiver.findByPk(idUser)
-    
-        if(usuario && receptor) {
-            await usuario.update(user)
-            await receptor.update(receiver)
-            
-            let {
-                idUser,
-                nombre,
-                apellidoP,
-                apellidoM,
-                nombreUsuario,
-                telefono,
-                email
-            } = usuario
 
-            let {}= receptor
+        let usuarioe = await User.findByPk(idUser)//obtiene los datos del operador seleccionado
+        
+        //coincidendia de nombreUsuario
+        let ocupado = await User.findOne({where:{nombreUsuario:user.nombreUsuario}}) 
+        if(ocupado==null){
+            ocupado = usuarioe
+        }
+        //coincidencia de email
+        let correoe = await User.findOne({where:{email:user.email}})
+        if(correoe==null){
+            correoe = usuarioe
+        }
+        //coincidencia de telefono
+        let tel = await User.findOne({where:{telefono:user.telefono}})
+        if(tel==null){
+            tel = usuarioe
+        }
 
-            return res.status(200).json({
-                usuarioActualizado: {
+        if((ocupado.idUser!=usuarioe.idUser)||(tel.idUser!=usuarioe.idUser)||(correoe.idUser!=usuarioe.idUser)){//verifica si la licencia, nombreUsuario,telefono o email pertenecen a otro usuario 
+            return res.status(400).json({
+                name: "Bad request",
+                message: "Los datos que intentas asignar ya pertenecen a otro usuario"
+            })
+        }else{
+            let usuario = await User.findByPk(idUser)
+            let receptor = await Receiver.findByPk(idUser)
+            let bodega = await Warehouse.findByPk(warehouses.idWarehouse)
+           
+
+            if(usuario && receptor && bodega) {
+                await usuario.update(user)
+                
+                let {
                     idUser,
                     nombre,
                     apellidoP,
@@ -436,17 +544,44 @@ router.patch('/:idUser/receivers/', async (req, res, next) => {
                     nombreUsuario,
                     telefono,
                     email
-                },
-                receptor:{
-                  
-                }
-            })
-        } else {
-            return res.status(404).json({
-                name: "Not Found",
-                message: "El operador que intentas actualizar no existe"
+                } = usuario
+                DB.query(
+                `
+                UPDATE warehouses 
+                SET idReceiver= ${idUser}
+                WHERE idWarehouse=${bodega.idWarehouse}`,
+                {
+                    type: QueryTypes.UPDATE
+                }).then((receptoract) => {
+                    if(receptoract!=''){
+                        return res.status(200).json({
+                            usuarioActualizado: {
+                                idUser,
+                                nombre,
+                                apellidoP,
+                                apellidoM,
+                                nombreUsuario,
+                                telefono,
+                                email
+                            },
+                            receptoract
+                        })
+                    }else{
+                        return res.status(404).json({
+                            name: 'Not Found',
+                            message: 'No se fue posible actualizar la bodega asignada'
+                        })
+                    }
+                }).catch((err) => {
+                    next(err);
                 })
-            }
+            } else {
+                return res.status(404).json({
+                    name: "Not Found",
+                    message: "El receptor que intentas actualizar o la bodega que intentas asignar no existe"
+                    })
+                }
+        }
         } catch(err) {
             next(err);
         }

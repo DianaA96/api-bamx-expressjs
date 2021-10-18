@@ -13,11 +13,17 @@ router.get('/', async (req, res, next) => {
         poliza,vencimientoPoliza 
         FROM vehicles 
         where deletedAt is NULL`,
-        { type: QueryTypes.SELECT})
-    .then((listaVehicles) => {
-        return res.status(200).json({
-            listaVehicles
-        });
+        { type: QueryTypes.SELECT}
+    ).then((listaVehicles) => {
+        if(listaVehicles!=''){
+            return res.status(200).json({
+                listaVehicles
+            });
+        }else{
+            return res.status(404).json({
+                message: "Aun no tienes unidades registradas",
+            })
+        }
     }).catch((err) => {
         next(err);
     })
@@ -35,7 +41,7 @@ router.get('/:idVehicle',async (req, res, next) => {
             } else {
                 return res.status(404).json({
                     name: "Not Found",
-                    message: "La unidad introducida no existe"
+                    message: "La unidad que buscas no existe"
                 })
             }
         }) 
@@ -49,17 +55,18 @@ router.post('/', async (req, res, next) => {
     console.log(req.body)
     const { vehicle } = req.body
     try {
-        let unidad = await Vehicle.findOne({
-            where: {placa: vehicle.placa},
-            where: {poliza: vehicle.poliza}
-        })
-        if(unidad){
+        let placa = await Vehicle.findOne({where: {placa: vehicle.placa}})
+        let poliza = await Vehicle.findOne({where: {poliza: vehicle.poliza}})
+        if(placa|| poliza){
             return res.status(400).json({
-                message: "Ya existe una unidad con esos datos",
+                message: "Ya existe una unidad con esa placa o poliza",
             })
         }
-        let unidadCreada = await Vehicle.create(vehicle) 
-        return res.status(201).json({unidadCreada})        
+        await Vehicle.create(vehicle).then((nuevaUnidad) => {
+            return res.status(201).json({nuevaUnidad})        
+        }).catch((err) =>{
+                next(err);
+            })
     }catch(err){
         next(err);
     }
@@ -73,18 +80,23 @@ router.patch('/:idVehicle/', async (req, res, next) => {
     const {vehicle}=req.body
     try {
         let unidad = await Vehicle.findByPk(idVehicle)
-        let carro = await Vehicle.findOne({
-            where: {placa: vehicle.placa},
-            where: {poliza: vehicle.poliza}
-        })
-        if(carro){
-            return res.status(400).json({
-                message: "Ya existe un vehiculo con estos datos",
+        if(!unidad){
+            return res.status(404).json({
+                message: "la unidad seleccionada no existe"
             })
+        }else{
+            let placa = await Vehicle.findOne({where: {placa: vehicle.placa}})
+            let poliza = await Vehicle.findOne({where: {poliza: vehicle.poliza}})
+            if(placa||poliza){
+                return res.status(400).json({
+                    message: "Ya existe una unidad con esa placa o poliza",
+                })
+            }else{
+                await unidad.update(vehicle).then((unidadActualizada) => {
+                   return res.status(201).json({unidadActualizada})
+                })
+            }
         }
-        await unidad.update(vehicle).then((a) => {
-           return res.status(201).json({unidad})
-        })
     }catch(err){
         next(err);
     }
@@ -105,7 +117,6 @@ router.delete('/:idVehicle', async (req, res, next)=>{
                 message: "La unidad seleccionada no existe"
             })
         }
-
     }   catch(err){
             next(err);
         }
