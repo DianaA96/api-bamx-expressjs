@@ -640,9 +640,10 @@ router.patch('/:idUser/receivers/', async (req, res, next) => {
 
 
 router.post('/login', async (req, res, next)=> {
-    const { body } = req;
+    const { body } = req.body;
     let roles={}
     let rol = "";
+    console.log(body)
 
     try{
         const user = await User.findOne({
@@ -704,7 +705,6 @@ router.post('/login', async (req, res, next)=> {
             process.env.AUTH_SECRET,
             { expiresIn: 10800 },
             (err, token) => {
-                console.log(token)
                 return res.status(201).json({
                     data: token,rol
                 });
