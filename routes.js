@@ -1,7 +1,8 @@
 const express = require('express');
 const router = express.Router();
 const {QueryTypes} = require('sequelize');
-const { Route, Donor, Vehicle, Collection, Driver ,Warehouse} = require('./database');
+var moment = require('moment-timezone');
+const { Route, Donor, Vehicle, Collection,Driver} = require('./database');
 
 // Destructuramos los modelos requeridos en las consultas que incluyen raw queries de SQL
 const { DB }  = require('./database');
@@ -246,7 +247,7 @@ router.get('/:idRoute', async (req, res, next) => {
 //asignarentregaoperador
 router.get('/assignedWarehouses/:idDriver', async (req, res, next) => {
     const {idDriver} = req.params
-    let fechaDeHoy = new Date()
+    let fechaDeHoy = moment.tz(moment(), 'America/Mexico_city').format('YYYY-MM-DD')
     try {
         let operador = await Driver.findByPk(idDriver)
         if(operador){
@@ -260,7 +261,7 @@ router.get('/assignedWarehouses/:idDriver', async (req, res, next) => {
                 join vehicles using(idVehicle)
                 join collectedQuantities using(idCollection)
                 join categories using(idCategory)
-                where date(fechaAsignacion)='${fechaDeHoy.toISOString()}' and
+                where date(fechaAsignacion)='${fechaDeHoy}' and
                 c.idDriver=${idDriver}`,
                 { type: QueryTypes.SELECT}
             ).then((datosUsuario) => {
@@ -289,7 +290,7 @@ router.get('/assignedWarehouses/:idDriver', async (req, res, next) => {
 // ENDPOINT MODAL ASIGNAR RUTAS DE RECOLECCIÓN [POST]
 router.post('/assignroute/', async (req, res, next) => {
         
-        const {idDriver, idRoute, idVehicle, donors} = req.body.body
+        const {idDriver, idRoute, idVehicle, donors, fechaFrontend} = req.body.body
         
         try {
             //Búsqueda de las tiendas asociadas a una ruta
@@ -303,7 +304,7 @@ router.post('/assignroute/', async (req, res, next) => {
             )
             
             // Creamos fecha en el backend
-            let nuevaFecha = new Date()
+            let nuevaFecha = fechaFrontend
             
             // Ciclamos el post de recolecciones de donadores asociados a la ruta especificada
             for(let a = 0; a < tiendasAsociadasRuta.length; a++) { 
@@ -311,7 +312,8 @@ router.post('/assignroute/', async (req, res, next) => {
                     fechaAsignacion: nuevaFecha,
                     idDriver: idDriver,
                     idDonor: tiendasAsociadasRuta[a].dataValues.idDonor,
-                    idVehicle: idVehicle
+                    idVehicle: idVehicle,
+                    recolectado: 0
                 })
             }
             
@@ -321,7 +323,8 @@ router.post('/assignroute/', async (req, res, next) => {
                     fechaAsignacion: nuevaFecha,
                     idDriver: idDriver,
                     idDonor: donors[b],
-                    idVehicle: idVehicle
+                    idVehicle: idVehicle,
+                    recolectado: 0
                 })
             }
 
@@ -423,8 +426,7 @@ router.patch('/:idRoute/donors/', async (req, res, next) => {
 router.post('/deliveries/assignedWarehouses/:idDriver', async (req, res, next) => {
     const {idDriver} = (req.params)
     const {entregas} = (req.body)
-    let fechaDeHoy = new Date()
-    fechaDeHoy=((fechaDeHoy.toISOString()))
+    let fechaDeHoy = moment.tz(moment(), 'America/Mexico_city').format('YYYY-MM-DD')
 
     try{
         entregas.map(async (x,i)=>{

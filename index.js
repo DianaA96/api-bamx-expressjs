@@ -4,7 +4,7 @@ const cors = require('cors') //npm install cors
 const bodyParser = require ('body-parser'); //npm install  --save body-parser
 const app = express();
 const port = process.env.PORT || 5000;
-
+var moment = require('moment-timezone');
 const users = require('./users');
 const routes = require('./routes');
 const donors = require('./donors');
@@ -33,7 +33,8 @@ app.listen(port, () => {
 app.get('/collections/driver', (req, res, next) => {
 
     const { thisDriver: idEmployee } = req.query
-    let fechaDeHoy = new Date()
+    
+    let fechaDeHoy = moment.tz(moment(), 'America/Mexico_city').format('YYYY-MM-DD')
 
     // Raw SQL Query
     DB.query(
@@ -45,7 +46,7 @@ app.get('/collections/driver', (req, res, next) => {
         join collections using (idDriver)
         join donors d using (idDonor)
         where
-        idDriver= ${parseInt(idEmployee)} and (recolectado=0 or recolectado is null) and date(fechaAsignacion) = '${(fechaDeHoy.toISOString().slice(0, 19).replace('T', ' ')).slice(0,10)}'
+        idDriver= ${parseInt(idEmployee)} and (recolectado=0 or recolectado is null) and date(fechaAsignacion) = '${fechaDeHoy}'
         `,
         { type: QueryTypes.SELECT })
         .then((queryResult) => {
@@ -64,7 +65,7 @@ app.get('/collections/driver', (req, res, next) => {
 app.get('/collections/done/driver', (req, res, next) => {
 
     const { thisDriver: idEmployee } = req.query
-    let fechaDeHoy = new Date()
+    let fechaDeHoy = moment.tz(moment(), 'America/Mexico_city').format('YYYY-MM-DD')
 
     // Raw SQL Query
     DB.query(
@@ -76,7 +77,7 @@ app.get('/collections/done/driver', (req, res, next) => {
         join collections using (idDriver)
         join donors d using (idDonor)
         where
-        idDriver= ${parseInt(idEmployee)} and recolectado=1 and date(fechaAsignacion) = '${(fechaDeHoy.toISOString().slice(0, 19).replace('T', ' ')).slice(0,10)}'
+        idDriver= ${parseInt(idEmployee)} and recolectado=1 and date(fechaAsignacion) = '${fechaDeHoy}'
         `,
         { type: QueryTypes.SELECT })
         .then((queryResult) => {
@@ -126,7 +127,8 @@ app.get('/collections', (req, res, next) => {
 app.get('/assigneddeliveries/:idReceiver', async (req, res, next) => {
 
     const { idReceiver } = req.params;
-    let fechaDeAyer = new Date((new Date()). valueOf() - 1000*60*60*24)
+    let fechaDeHoy = moment.tz(moment(), 'America/Mexico_city').format('YYYY-MM-DD')
+
 
     try {
         // Raw SQL Query
@@ -141,7 +143,7 @@ app.get('/assigneddeliveries/:idReceiver', async (req, res, next) => {
             join collections c on c.idDriver=o.idDriver
             join vehicles using(idVehicle)
             join warehouses w on w.idWarehouse=wa.idWarehouse
-            where date(fecha)='2021-10-13' and
+            where date(fecha) = '${fechaDeHoy}' and
             idReceiver=${idReceiver}
             `,
             { type: QueryTypes.SELECT })
@@ -170,19 +172,19 @@ app.get('/assigneddeliveries/:idReceiver', async (req, res, next) => {
                 auxChofer.nombreUsuario = driverData[i].nombreUsuario
                 auxChofer.modelo = driverData[i].modelo
                
-                for (let i = 0; i < driverData.length; i++) {
+                for (let o = 0; o < driverData.length; o++) {
 
-                    if(driverData[i].categoria === 'Pan' && idChofer === driverData[i].idDriver ) {
-                        auxChofer.pan = driverData[i].CantidadaEntregar
+                    if(driverData[o].categoria === 'Pan' && idChofer === driverData[o].idDriver ) {
+                        auxChofer.pan = driverData[o].CantidadaEntregar
                     }
-                    else if (driverData[i].categoria === 'Abarrote' && idChofer === driverData[i].idDriver ) {
-                        auxChofer.abarrote = driverData[i].CantidadaEntregar
+                    else if (driverData[o].categoria === 'Abarrote' && idChofer === driverData[o].idDriver ) {
+                        auxChofer.abarrote = driverData[o].CantidadaEntregar
                     }
-                    else if (driverData[i].categoria === 'Frutas y verduras' && idChofer === driverData[i].idDriver ) {
-                        auxChofer.fruta = driverData[i].CantidadaEntregar
+                    else if (driverData[o].categoria === 'Frutas y verduras' && idChofer === driverData[o].idDriver ) {
+                        auxChofer.fruta = driverData[o].CantidadaEntregar
                     }
-                    else if (driverData[i].categoria === 'No comestible'&& idChofer === driverData[i].idDriver ) {
-                        auxChofer.noComestible = driverData[i].CantidadaEntregar
+                    else if (driverData[o].categoria === 'No comestible'&& idChofer === driverData[o].idDriver ) {
+                        auxChofer.noComestible = driverData[o].CantidadaEntregar
                     } 
                 }
                 data.push(auxChofer)

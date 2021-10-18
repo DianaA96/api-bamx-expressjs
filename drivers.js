@@ -3,13 +3,15 @@ const express = require('express');
 const  {QueryTypes, Sequelize} = require('sequelize');
 const router = express.Router();
 const {DB}  = require('./database')
+var moment = require('moment-timezone');
 const {User, Driver, CollectedQuantity, Collection} = require('./database');
 
 // ASIGNAR RUTAS DE RECOLECCIÓN. [GET]. OBTIENE LA LISTA DE LOS USUARIOS A LOS QUE NO SE LES HAN
 // ASIGNADO RUTAS DE RECOLECCIÓN
 router.get('/', async (req, res, next) => {
 
-    let fechaDeHoy = new Date()
+    let fechaDeHoy = moment.tz(moment(), 'America/Mexico_city').format('YYYY-MM-DD')
+
     if(req.query.name) {
         DB.query(
         `
@@ -23,7 +25,7 @@ router.get('/', async (req, res, next) => {
         o.idDriver
         from 
         drivers o left join collections c on o.idDriver=c.idDriver
-        where c.idDriver is null or ((date(fechaRecoleccion) != '${fechaDeHoy.toISOString().slice(0, 19).replace('T', ' ')}') and fechaRecoleccion is not null))
+        where c.idDriver is null or ((date(fechaRecoleccion) = '${fechaDeHoy}') and date(fechaRecoleccion) is not null))
         and nombre LIKE "%${req.query.name}%" or u.deletedAt is NULL and apellidoP LIKE "%${req.query.name}%" or u.deletedAt is NULL and apellidoM LIKE "%${req.query.name}%" or u.deletedAt is NULL and nombreUsuario LIKE "%${req.query.name}%"
         `, { type: Sequelize.QueryTypes.SELECT }
         )
@@ -56,7 +58,7 @@ router.get('/', async (req, res, next) => {
             o.idDriver
             from 
             drivers o left join collections c on o.idDriver=c.idDriver
-            where c.idDriver is null or ((date(fechaRecoleccion) != '${fechaDeHoy.toISOString().slice(0, 19).replace('T', ' ')}') and fechaRecoleccion is not null))
+            where c.idDriver is null or ((date(fechaRecoleccion) = '${fechaDeHoy}') and date(fechaRecoleccion) is not null))
             order by nombre ${req.query.order};
             `, { type: Sequelize.QueryTypes.SELECT }
             )
@@ -89,7 +91,7 @@ router.get('/', async (req, res, next) => {
             o.idDriver
             from 
             drivers o left join collections c on o.idDriver=c.idDriver
-            where c.idDriver is null or ((date(fechaRecoleccion) != '${fechaDeHoy.toISOString().slice(0, 19).replace('T', ' ')}') and fechaRecoleccion is not null))
+            where c.idDriver is null or ((date(fechaRecoleccion) = '${fechaDeHoy}') and date(fechaRecoleccion) is not null))
             `, { type: Sequelize.QueryTypes.SELECT }
             )
             .then((listaUsuarios) => {
@@ -110,7 +112,7 @@ router.get('/', async (req, res, next) => {
     }
 })
 
-// GET bodegas asignadas
+/* // GET bodegas asignadas
 router.get('/assignedWarehouses/:idDriver', async (req, res, next) => {
     const { idDriver } = req.params
     let fechaDeHoy = new Date()
@@ -121,7 +123,7 @@ router.get('/assignedWarehouses/:idDriver', async (req, res, next) => {
         join warehousesAssignations wa using(idDriver)
         join warehouses w using(idWarehouse)
         join assignedQuantities aq on aq.idWarehousesAssignation=wa.idWarehousesAssignation
-        where fecha="${fechaDeHoy.toISOString().slice(0, 19).replace('T', ' ')}" and idDriver=${idDriver}`,
+        where fecha="${(fechaDeHoy.toISOString().slice(0, 19).replace('T', ' ')).slice(0, 10)}" and idDriver=:idDriver`,
         { 
             type: QueryTypes.SELECT
         }
@@ -142,21 +144,22 @@ router.get('/assignedWarehouses/:idDriver', async (req, res, next) => {
         next(err);
     })
 }
-)
+) */
 
 // GET operadores GESTIÓN DE OPERADORES EN RUTA // AÑADIR LA FECHA COMO PARÁMETRO DE BÚSQUEDA
 // obtiene el nombre, nombreUsuario, idDriver y número de recolecciones COMPLETAS asignadas el día de hoy y ASIGNADAS el día de hoy
 router.get('/enroutedrivers', async(req, res, next) =>{
 
-    let fechaDeHoy = new Date()
+    let fechaDeHoy = moment.tz(moment(), 'America/Mexico_city').format('YYYY-MM-DD')
     DB.query(
         `select
-        idDriver, nombreUsuario,u.nombre,apellidoP,apellidoM,sum(recolectado = 1) as recolectadas,sum(recolectado = 0) as norecolectadas
+        idDriver, nombreUsuario,u.nombre,apellidoP,apellidoM,
+        sum(recolectado = 1) as recolectadas,sum(recolectado = 0) as norecolectadas
         from
         users u join drivers o on u.idUser=o.idDriver
         join collections c using(idDriver)
         where 
-        fechaRecoleccion is null
+        date(fechaAsignacion) = '${fechaDeHoy}'
         group by idDriver`, 
         { 
             type: QueryTypes.SELECT
@@ -184,7 +187,7 @@ router.get('/enroutedrivers', async(req, res, next) =>{
 // Busca un solo chofer y devuelve las recolecciones realizadas. VISTA GESTION DE OPERADORES EN RUTA
 router.get('/enroutedriver/:idDriver', async(req, res, next) =>{
 
-    let fechaDeHoy = new Date()
+    let fechaDeHoy = moment.tz(moment(), 'America/Mexico_city').format('YYYY-MM-DD')
     
     try {
         let chofer = await DB.query(
@@ -236,7 +239,7 @@ router.get('/enroutedriver/:idDriver', async(req, res, next) =>{
 // SEGUIMIENTO DE OPERADORES EN RUTA
 //FALTA IMPLEMENTAR FECHAS
 router.get('/collectedquantitiespernote/:idCollection', async(req, res, next) =>{
-    let fechaDeHoy = new Date()
+    let fechaDeHoy = moment.tz(moment(), 'America/Mexico_city').format('YYYY-MM-DD')
     
     try {
 
@@ -298,6 +301,9 @@ router.get('/collectedquantitiespernote/:idCollection', async(req, res, next) =>
 router.get('/assigndeliveries', async(req, res, next) =>{
 
     try {
+
+        let fechaDeHoy = moment.tz(moment(), 'America/Mexico_city').format('YYYY-MM-DD')
+
         // Raw SQL Query
         let driverData = await DB.query(
             `select
@@ -307,7 +313,7 @@ router.get('/assigndeliveries', async(req, res, next) =>{
             join collections c using(idDriver)
             join collectedQuantities using(idCollection)
             join categories using(idCategory)
-            where date(fechaRecoleccion) is null
+            where date(fechaRecoleccion) = '${fechaDeHoy}' and fechaRecoleccion is not null
             group by idCategory
             `,
             { type: QueryTypes.SELECT })
@@ -323,7 +329,7 @@ router.get('/assigndeliveries', async(req, res, next) =>{
         }
         ]
         let aux
-
+        
         for (let i = 0; i < driverData.length; i++) {
             if(idChofer !== driverData[i].idDriver) {
                 idChofer = driverData[i].idDriver
@@ -335,7 +341,7 @@ router.get('/assigndeliveries', async(req, res, next) =>{
                     join collections c using(idDriver)
                     join collectedQuantities using(idCollection)
                     join categories using(idCategory)
-                    where date(fechaRecoleccion) is null
+                    where date(fechaRecoleccion) = '${fechaDeHoy}' and fechaRecoleccion is not null
                     group by idDriver
                     `, 
                     { type: QueryTypes.SELECT })
@@ -355,7 +361,7 @@ router.get('/assigndeliveries', async(req, res, next) =>{
                     join collections c using(idDriver)
                     join collectedQuantities using(idCollection)
                     join categories using(idCategory)
-                    where date(fechaRecoleccion) is null
+                    where date(fechaRecoleccion) = '${fechaDeHoy}' and fechaRecoleccion is not null
                     group by idCategory
                     `, 
                     { type: QueryTypes.SELECT })
@@ -381,5 +387,84 @@ router.get('/assigndeliveries', async(req, res, next) =>{
     }
 }
 )
+
+// GET asignar bodegas
+router.get('/assignedwarehouses/:idDriver', async(req, res, next) =>{
+    
+    const { idDriver } = req.params
+    let fechaDeHoy = moment.tz(moment(), 'America/Mexico_city').format('YYYY-MM-DD')
+
+    try {
+        let warehouseData = await DB.query(
+            `select
+            u.nombre,u.apellidoP,w.idWarehouse,u.apellidoM,w.nombre as Bodega,cp,municipio,colonia,calle,numExterior,c.nombre as cosa,cantidad
+            from
+            users u join drivers o on u.idUser=o.idDriver
+            join warehousesAssignations wa using(idDriver)
+            join assignedQuantities using(idWarehousesAssignation)
+            join categories c using(idCategory)
+            join warehouses w on w.idWarehouse=wa.idWarehouse
+            where date(fecha)='${fechaDeHoy}' and idDriver=${idDriver}`,
+            { type: QueryTypes.SELECT }
+        )
+        
+        let auxBodega = {
+            bodega: '',
+            calle: '',
+            numExterior: '',
+            colonia: '',
+            municipio: '',
+            cp: '',
+            fruta: '',
+            abarrote: '',
+            pan: '',
+            noComestible: ''
+        }
+
+        let idWarehouseIt = -1
+        let data = []
+        for (let x = 0; x < warehouseData.length; x++) {
+            if (warehouseData[x].idWarehouse !== idWarehouseIt) {
+                idWarehouseIt = warehouseData[x].idWarehouse
+                auxBodega.calle = warehouseData[x].calle
+                auxBodega.numExterior = warehouseData[x].numExterior
+                auxBodega.colonia = warehouseData[x].colonia
+                auxBodega.municipio = warehouseData[x].municipio
+                auxBodega.cp = warehouseData[x].cp
+                auxBodega.bodega = warehouseData[x].Bodega
+
+                for (let o = 0; o < warehouseData.length; o++) {
+                    if(warehouseData[o].cosa === 'Pan' && idWarehouseIt === warehouseData[o].idWarehouse ) {
+                        auxBodega.pan = warehouseData[o].cantidad
+                    }
+                    else if (warehouseData[o].cosa === 'Abarrote' && idWarehouseIt === warehouseData[o].idWarehouse ) {
+                        auxBodega.abarrote = warehouseData[o].cantidad
+                    }
+                    else if (warehouseData[o].cosa === 'Frutas y verduras' && idWarehouseIt === warehouseData[o].idWarehouse ) {
+                        auxBodega.fruta = warehouseData[o].cantidad
+                    }
+                    else if (warehouseData[o].cosa === 'No comestible'&& idWarehouseIt === warehouseData[o].idWarehouse ) {
+                        auxBodega.noComestible = warehouseData[o].cantidad
+                    } 
+                }
+                data.push(auxBodega)
+                auxBodega = {}           
+            }
+        }
+
+        if(warehouseData){
+            return res.status(200).json({
+                data
+            })
+        } else {
+            return res.status(400).json({
+                message: "No hay bodegas asignadas"
+            })
+        }
+
+    } catch(err) {
+        next(err);
+    }
+})
 
 module.exports = router
