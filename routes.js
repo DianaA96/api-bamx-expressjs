@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const {QueryTypes} = require('sequelize');
-const { Route, Donor, Vehicle, Collection, Warehouse} = require('./database');
+const { Route, Donor, Vehicle, Collection, Driver ,Warehouse} = require('./database');
 
 // Destructuramos los modelos requeridos en las consultas que incluyen raw queries de SQL
 const { DB }  = require('./database');
@@ -243,6 +243,49 @@ router.get('/:idRoute', async (req, res, next) => {
     }
 })
 
+//asignarentregaoperador
+router.get('/assignedWarehouses/:idDriver', async (req, res, next) => {
+    const {idDriver} = req.params
+    let fechaDeHoy = new Date()
+    try {
+        let operador = await Driver.findByPk(idDriver)
+        if(operador){
+            DB.query(
+                `
+                select
+                distinct o.idDriver,u.nombre as operador,u.apellidoP,u.apellidoM,cantidad as CantidadaRecolectada,categories.nombre as categoria,modelo,u.nombreUsuario
+                from
+                users u join drivers o on u.idUser=o.idDriver
+                join collections c on c.idDriver=o.idDriver
+                join vehicles using(idVehicle)
+                join collectedQuantities using(idCollection)
+                join categories using(idCategory)
+                where date(fechaAsignacion)='${fechaDeHoy.toISOString()}' and
+                c.idDriver=${idDriver}`,
+                { type: QueryTypes.SELECT}
+            ).then((datosUsuario) => {
+                if(datosUsuario!=''){
+                    return res.status(200).json({
+                        datosUsuario
+                    })
+                }else{
+                    return res.status(404).json({
+                        name: 'Not Found',
+                        message: 'El operador aun no ha realizado ninguna recoleccion'
+                    })
+                }
+            })
+        }else{
+            return res.status(400).json({
+                name: "Bad Request",
+                message: "El operador no existe"
+            })
+        }
+    } catch(err) {
+        next(err);
+    }
+})
+
 // ENDPOINT MODAL ASIGNAR RUTAS DE RECOLECCIÓN [POST]
 router.post('/assignroute/', async (req, res, next) => {
         
@@ -377,57 +420,54 @@ router.patch('/:idRoute/donors/', async (req, res, next) => {
 )
 
 //Asignar entrega operador
-router.post('/deliveries/assignedWarehouses', async (req, res, next) => {
-    let idDriver = (req.body.idDriver)
-    let entregas = (req.body.rutaEntrega)
+router.post('/deliveries/assignedWarehouses/:idDriver', async (req, res, next) => {
+    const {idDriver} = (req.params)
+    const {entregas} = (req.body)
     let fechaDeHoy = new Date()
     fechaDeHoy=((fechaDeHoy.toISOString()))
-    try{
-        let bodega = await Warehouse.findOne({where:{nombre: entregas.entrega1.nombre}})        
-        DB.query(
-            `
-            INSERT 
-            INTO warehousesAssignations (fecha, idDriver, idWarehouse)
-            VALUES ('${fechaDeHoy}', '${idDriver}', '${bodega.idWarehouse}');`,
-            { type: QueryTypes.INSERT }
-            ).then(async (asignacion) => {
-                (DB.query(
-                    `
-                    INSERT 
-                    INTO assignedQuantities (idWarehousesAssignation, idCategory , cantidad ) 
-                    VALUES (${asignacion[0]},${entregas.entrega1.c1.idCategoria},${entregas.entrega1.c1.cantidad});`,
-                    { type: QueryTypes.INSERT}
-                   ),
-                DB.query(//definir if para realizar inserciones
-                    `
-                    INSERT 
-                    INTO assignedQuantities (idWarehousesAssignation, idCategory , cantidad ) 
-                    VALUES (${asignacion[0]},${entregas.entrega1.c2.idCategoria},${entregas.entrega1.c2.cantidad});`,
-                    { type: QueryTypes.INSERT}     
-                    ),
-                DB.query(
-                    `
-                    INSERT 
-                    INTO assignedQuantities (idWarehousesAssignation, idCategory , cantidad ) 
-                    VALUES (${asignacion[0]},${entregas.entrega1.c3.idCategoria},${entregas.entrega1.c3.cantidad});`,
-                    { type: QueryTypes.INSERT}     
-                    ),
-                DB.query(
-                    `
-                    INSERT 
-                    INTO assignedQuantities (idWarehousesAssignation, idCategory , cantidad ) 
-                    VALUES (${asignacion[0]},${entregas.entrega1.c4.idCategoria},${entregas.entrega1.c4.cantidad});`,
-                    { type: QueryTypes.INSERT}     
-                    )
-                ).then((entregas) =>{
-                    return res.status(201).json({
-                        entregas
-                    })
-                }).catch((err) =>{
-                    next(err);
-                })
-            })
 
+    try{
+        entregas.map(async (x,i)=>{
+            DB.query(
+                `
+                INSERT 
+                INTO warehousesAssignations (fecha, idDriver, idWarehouse)
+                VALUES ('${fechaDeHoy}', '${idDriver}', '${entregas[i].idWarehouse}');`,
+                { type: QueryTypes.INSERT }
+            ).then(async (asignacion) => {
+                    (DB.query(
+                        `
+                        INSERT 
+                        INTO assignedQuantities (idWarehousesAssignation, idCategory , cantidad ) 
+                        VALUES (${asignacion[0]},${entregas[i].c1.idCategoria},${entregas[i].c1.cantidad});`,
+                        { type: QueryTypes.INSERT}
+                    ),
+                    DB.query(
+                        `
+                        INSERT 
+                        INTO assignedQuantities (idWarehousesAssignation, idCategory , cantidad ) 
+                        VALUES (${asignacion[0]},${entregas[i].c2.idCategoria},${entregas[i].c2.cantidad});`,
+                        { type: QueryTypes.INSERT}     
+                    ),
+                    DB.query(
+                        `
+                        INSERT 
+                        INTO assignedQuantities (idWarehousesAssignation, idCategory , cantidad ) 
+                        VALUES (${asignacion[0]},${entregas[i].c3.idCategoria},${entregas[i].c3.cantidad});`,
+                        { type: QueryTypes.INSERT}     
+                    ),
+                    DB.query(
+                        `
+                        INSERT 
+                        INTO assignedQuantities (idWarehousesAssignation, idCategory , cantidad ) 
+                        VALUES (${asignacion[0]},${entregas[i].c4.idCategoria},${entregas[i].c4.cantidad});`,
+                        { type: QueryTypes.INSERT}     
+                    )
+                    ).catch((err) =>{next(err)})
+                }).catch((err) =>{next(err)})
+            }
+        )
+        return res.status(201).json({entregas})
     }catch(err) {
         next(err);
     }

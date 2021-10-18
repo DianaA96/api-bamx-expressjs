@@ -121,9 +121,8 @@ router.get('/assignedWarehouses/:idDriver', async (req, res, next) => {
         join warehousesAssignations wa using(idDriver)
         join warehouses w using(idWarehouse)
         join assignedQuantities aq on aq.idWarehousesAssignation=wa.idWarehousesAssignation
-        where fecha="${fechaDeHoy.toISOString().slice(0, 19).replace('T', ' ')}" and idDriver=:idDriver`,
+        where fecha="${fechaDeHoy.toISOString().slice(0, 19).replace('T', ' ')}" and idDriver=${idDriver}`,
         { 
-            replacements: {idDriver:idDriver},
             type: QueryTypes.SELECT
         }
     )
