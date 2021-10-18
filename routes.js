@@ -382,8 +382,8 @@ router.patch('/:idRoute/donors/', async (req, res, next) => {
 router.post('/deliveries/assignedWarehouses', async (req, res, next) => {
     let idDriver = (req.body.idDriver)
     let entregas = (req.body.rutaEntrega)
-    let fechaDeHoy = new Date()
-    fechaDeHoy=((fechaDeHoy.toISOString()))
+    let fechaDeHoy = moment.tz(moment(), 'America/Mexico_city').format('YYYY-MM-DD')
+
     try{
         let bodega = await Warehouse.findOne({where:{nombre: entregas.entrega1.nombre}})        
         DB.query(
