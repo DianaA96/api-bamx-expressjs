@@ -429,47 +429,52 @@ router.post('/deliveries/assignedWarehouses/:idDriver', async (req, res, next) =
     let fechaDeHoy = moment.tz(moment(), 'America/Mexico_city').format('YYYY-MM-DD')
 
     try{
+        let cA = moment.tz(moment(), 'America/Mexico_city').format('YYYY-MM-DD HH:mm:ss')
         entregas.map(async (x,i)=>{
             DB.query(
                 `
                 INSERT 
-                INTO warehousesAssignations (fecha, idDriver, idWarehouse)
-                VALUES ('${fechaDeHoy}', '${idDriver}', '${entregas[i].idWarehouse}');`,
+                INTO warehousesAssignations (fecha, idDriver, idWarehouse, createdAt)
+                VALUES ('${fechaDeHoy}', ${idDriver}, ${entregas[i].idWarehouse},'${cA}')`,
                 { type: QueryTypes.INSERT }
-            ).then(async (asignacion) => {
-                    (DB.query(
+            ).then(async (asignacion) => {  
+                (
+                DB.query(
                         `
                         INSERT 
-                        INTO assignedQuantities (idWarehousesAssignation, idCategory , cantidad ) 
-                        VALUES (${asignacion[0]},${entregas[i].c1.idCategoria},${entregas[i].c1.cantidad});`,
+                        INTO assignedQuantities (idWarehousesAssignation, idCategory , cantidad , createdAt) 
+                        VALUES (${asignacion[0]},${entregas[i].c1.idCategoria},${entregas[i].c1.cantidad},'${cA}')`,
                         { type: QueryTypes.INSERT}
                     ),
                     DB.query(
                         `
                         INSERT 
-                        INTO assignedQuantities (idWarehousesAssignation, idCategory , cantidad ) 
-                        VALUES (${asignacion[0]},${entregas[i].c2.idCategoria},${entregas[i].c2.cantidad});`,
+                        INTO assignedQuantities (idWarehousesAssignation, idCategory , cantidad , createdAt)  
+                        VALUES (${asignacion[0]},${entregas[i].c2.idCategoria},${entregas[i].c2.cantidad},'${cA}')`,
                         { type: QueryTypes.INSERT}     
                     ),
                     DB.query(
                         `
                         INSERT 
-                        INTO assignedQuantities (idWarehousesAssignation, idCategory , cantidad ) 
-                        VALUES (${asignacion[0]},${entregas[i].c3.idCategoria},${entregas[i].c3.cantidad});`,
+                        INTO assignedQuantities (idWarehousesAssignation, idCategory , cantidad , createdAt)  
+                        VALUES (${asignacion[0]},${entregas[i].c3.idCategoria},${entregas[i].c3.cantidad},'${cA}')`,
                         { type: QueryTypes.INSERT}     
                     ),
                     DB.query(
                         `
                         INSERT 
-                        INTO assignedQuantities (idWarehousesAssignation, idCategory , cantidad ) 
-                        VALUES (${asignacion[0]},${entregas[i].c4.idCategoria},${entregas[i].c4.cantidad});`,
+                        INTO assignedQuantities (idWarehousesAssignation, idCategory , cantidad , createdAt)  
+                        VALUES (${asignacion[0]},${entregas[i].c4.idCategoria},${entregas[i].c4.cantidad},'${cA}')`,
                         { type: QueryTypes.INSERT}     
                     )
-                    ).catch((err) =>{next(err)})
+                    )
+                        
                 }).catch((err) =>{next(err)})
             }
         )
-        return res.status(201).json({entregas})
+        return res.status(201).json({
+            entregas
+        })
     }catch(err) {
         next(err);
     }
