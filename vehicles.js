@@ -3,7 +3,7 @@ const express = require('express');
 const  {QueryTypes} = require('sequelize');
 const router = express.Router();
 const {Vehicle} = require('./database');
-
+var moment = require('moment-timezone');
 const {DB}  = require('./database');
 
 //OBTIENE TODAS LAS UNIDADES

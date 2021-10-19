@@ -3,14 +3,14 @@ const express = require('express');
 const  {QueryTypes, Sequelize} = require('sequelize');
 const router = express.Router();
 const {DB}  = require('./database')
+var moment = require('moment-timezone');
 const {User, Driver, CollectedQuantity, Collection} = require('./database');
 
 // ASIGNAR RUTAS DE RECOLECCIÓN. [GET]. OBTIENE LA LISTA DE LOS USUARIOS A LOS QUE NO SE LES HAN
 // ASIGNADO RUTAS DE RECOLECCIÓN
 router.get('/', async (req, res, next) => {
 
-    let fechaDeHoy = new Date()
-    console.log((fechaDeHoy.toISOString().slice(0, 19).replace('T', ' ')).slice(0, 10))
+    let fechaDeHoy = moment.tz(moment(), 'America/Mexico_city').format('YYYY-MM-DD')
 
     if(req.query.name) {
         DB.query(
@@ -25,7 +25,7 @@ router.get('/', async (req, res, next) => {
         o.idDriver
         from 
         drivers o left join collections c on o.idDriver=c.idDriver
-        where c.idDriver is null or ((date(fechaRecoleccion) = '${(fechaDeHoy.toISOString().slice(0, 19).replace('T', ' ')).slice(0, 10)}') and date(fechaRecoleccion) is not null))
+        where c.idDriver is null or ((date(fechaRecoleccion) = '${fechaDeHoy}') and date(fechaRecoleccion) is not null))
         and nombre LIKE "%${req.query.name}%" or u.deletedAt is NULL and apellidoP LIKE "%${req.query.name}%" or u.deletedAt is NULL and apellidoM LIKE "%${req.query.name}%" or u.deletedAt is NULL and nombreUsuario LIKE "%${req.query.name}%"
         `, { type: Sequelize.QueryTypes.SELECT }
         )
@@ -58,7 +58,7 @@ router.get('/', async (req, res, next) => {
             o.idDriver
             from 
             drivers o left join collections c on o.idDriver=c.idDriver
-            where c.idDriver is null or ((date(fechaRecoleccion) = '${(fechaDeHoy.toISOString().slice(0, 19).replace('T', ' ')).slice(0, 10)}') and date(fechaRecoleccion) is not null))
+            where c.idDriver is null or ((date(fechaRecoleccion) = '${fechaDeHoy}') and date(fechaRecoleccion) is not null))
             order by nombre ${req.query.order};
             `, { type: Sequelize.QueryTypes.SELECT }
             )
@@ -91,7 +91,7 @@ router.get('/', async (req, res, next) => {
             o.idDriver
             from 
             drivers o left join collections c on o.idDriver=c.idDriver
-            where c.idDriver is null or ((date(fechaRecoleccion) = '${(fechaDeHoy.toISOString().slice(0, 19).replace('T', ' ')).slice(0, 10)}') and date(fechaRecoleccion) is not null))
+            where c.idDriver is null or ((date(fechaRecoleccion) = '${fechaDeHoy}') and date(fechaRecoleccion) is not null))
             `, { type: Sequelize.QueryTypes.SELECT }
             )
             .then((listaUsuarios) => {
@@ -125,7 +125,6 @@ router.get('/assignedWarehouses/:idDriver', async (req, res, next) => {
         join assignedQuantities aq on aq.idWarehousesAssignation=wa.idWarehousesAssignation
         where fecha="${(fechaDeHoy.toISOString().slice(0, 19).replace('T', ' ')).slice(0, 10)}" and idDriver=:idDriver`,
         { 
-            replacements: {idDriver:idDriver},
             type: QueryTypes.SELECT
         }
     )
@@ -151,7 +150,7 @@ router.get('/assignedWarehouses/:idDriver', async (req, res, next) => {
 // obtiene el nombre, nombreUsuario, idDriver y número de recolecciones COMPLETAS asignadas el día de hoy y ASIGNADAS el día de hoy
 router.get('/enroutedrivers', async(req, res, next) =>{
 
-    let fechaDeHoy = new Date()
+    let fechaDeHoy = moment.tz(moment(), 'America/Mexico_city').format('YYYY-MM-DD')
     DB.query(
         `select
         idDriver, nombreUsuario,u.nombre,apellidoP,apellidoM,
@@ -160,7 +159,7 @@ router.get('/enroutedrivers', async(req, res, next) =>{
         users u join drivers o on u.idUser=o.idDriver
         join collections c using(idDriver)
         where 
-        date(fechaAsignacion) = '${(fechaDeHoy.toISOString().slice(0, 19).replace('T', ' ')).slice(0, 10)}'
+        date(fechaAsignacion) = '${fechaDeHoy}'
         group by idDriver`, 
         { 
             type: QueryTypes.SELECT
@@ -188,7 +187,7 @@ router.get('/enroutedrivers', async(req, res, next) =>{
 // Busca un solo chofer y devuelve las recolecciones realizadas. VISTA GESTION DE OPERADORES EN RUTA
 router.get('/enroutedriver/:idDriver', async(req, res, next) =>{
 
-    let fechaDeHoy = new Date()
+    let fechaDeHoy = moment.tz(moment(), 'America/Mexico_city').format('YYYY-MM-DD')
     
     try {
         let chofer = await DB.query(
@@ -240,7 +239,7 @@ router.get('/enroutedriver/:idDriver', async(req, res, next) =>{
 // SEGUIMIENTO DE OPERADORES EN RUTA
 //FALTA IMPLEMENTAR FECHAS
 router.get('/collectedquantitiespernote/:idCollection', async(req, res, next) =>{
-    let fechaDeHoy = new Date()
+    let fechaDeHoy = moment.tz(moment(), 'America/Mexico_city').format('YYYY-MM-DD')
     
     try {
 
@@ -347,8 +346,6 @@ router.get('/assigndeliveries', async(req, res, next) =>{
         }
 
         let choferes = []
-
-        console.log(driverData)
         
         for( let y = 0; y < driverData.length; y++) {
             if (driverData[y].idDriver !== idChofer){
@@ -428,7 +425,7 @@ router.get('/assigndeliveries', async(req, res, next) =>{
 router.get('/assignedwarehouses/:idDriver', async(req, res, next) =>{
     
     const { idDriver } = req.params
-    let fechaDeHoy = new Date()
+    let fechaDeHoy = moment.tz(moment(), 'America/Mexico_city').format('YYYY-MM-DD')
 
     try {
         let warehouseData = await DB.query(
@@ -440,7 +437,7 @@ router.get('/assignedwarehouses/:idDriver', async(req, res, next) =>{
             join assignedQuantities using(idWarehousesAssignation)
             join categories c using(idCategory)
             join warehouses w on w.idWarehouse=wa.idWarehouse
-            where date(fecha)='${(fechaDeHoy.toISOString().slice(0, 19).replace('T', ' ')).slice(0, 10)}' and idDriver=${idDriver}`,
+            where date(fecha)='${fechaDeHoy}' and idDriver=${idDriver}`,
             { type: QueryTypes.SELECT }
         )
         

@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router()
 const {QueryTypes} = require('sequelize');
+var moment = require('moment-timezone');
 const {Delivery, DeliveredQuantity, Receiver, WarehousesAssignation} = require('./database');
 
 const {DB}  = require('./database')
@@ -9,7 +10,7 @@ const {DB}  = require('./database')
 router.get('/:idReceiver', async (req, res, next) => {
     const { idReceiver } = req.params
 
-    let fechaDeHoy = new Date()
+    let fechaDeHoy = moment.tz(moment(), 'America/Mexico_city').format('YYYY-MM-DD')
 
     DB.query(
         `select u.nombre,w.nombre,u2.nombre,u2.apellidoP,placa,cantidad
@@ -22,7 +23,7 @@ router.get('/:idReceiver', async (req, res, next) => {
         join users u2 on u2.idUser=o.idDriver
         join collections c on c.idCollection=o.idDriver
         join vehicles on vehicles.idVehicle=c.idCollection
-        where fecha='${(fechaDeHoy.toISOString().slice(0, 19).replace('T', ' ')).slice(0, 10)}' and  idReceiver=:idReceiver`,
+        where fecha='${fechaDeHoy}' and  idReceiver=:idReceiver`,
         { 
             replacements: {idReceiver: idReceiver},
             type: QueryTypes.SELECT
