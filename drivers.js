@@ -547,14 +547,15 @@ router.get('/assignedwarehouses/:idDriver', async(req, res, next) =>{
     try {
         let warehouseData = await DB.query(
             `select
-            u.nombre,u.apellidoP,w.idWarehouse,u.apellidoM,w.nombre as Bodega,cp,municipio,colonia,calle,numExterior,c.nombre as cosa,cantidad
+            u.nombre,u.apellidoP,w.idWarehouse,u.apellidoM,w.nombre as Bodega,cp,municipio,colonia,calle,numExterior,c.nombre as cosa, cantidad
             from
             users u join drivers o on u.idUser=o.idDriver
             join warehousesAssignations wa using(idDriver)
             join assignedQuantities using(idWarehousesAssignation)
             join categories c using(idCategory)
             join warehouses w on w.idWarehouse=wa.idWarehouse
-            where date(fecha)='${fechaDeHoy}' and idDriver=${idDriver}`,
+            left join deliveries d on d.idWarehousesAssignation=wa.idWarehousesAssignation
+            where date(fecha)='${fechaDeHoy}' and idDriver=${idDriver} and idDelivery is null`,
             { type: QueryTypes.SELECT }
         )
         
