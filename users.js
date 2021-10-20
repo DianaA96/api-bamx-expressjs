@@ -654,7 +654,7 @@ router.post('/login', async (req, res, next)=> {
 
         if (!user) {
             return res.status(401).json({
-                data: 'Usuario no encontrado',
+                data: 'Credenciales inválidas',
             })
         }
 
@@ -666,7 +666,7 @@ router.post('/login', async (req, res, next)=> {
 
         if (!isMatch) {
             return res.status(401).json({
-                data:  user,
+                data:  'Credenciales inválidas'
             })
         }
 
@@ -696,6 +696,9 @@ router.post('/login', async (req, res, next)=> {
         if(listaRoles[0].idAdmin!=null){
             rol='admin'
         }
+
+        const idUser = user.idUser
+
         const payload = {
             idUser: user.idUser
         }
@@ -706,7 +709,7 @@ router.post('/login', async (req, res, next)=> {
             { expiresIn: 10800 },
             (err, token) => {
                 return res.status(201).json({
-                    data: token,rol
+                    data: token,rol,idUser
                 });
             }
         )
