@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const {QueryTypes} = require('sequelize');
 var moment = require('moment-timezone');
-const { Route, Donor, Vehicle, Collection,Driver} = require('./database');
+const { Route, Donor, Vehicle, Collection,Driver, Warehouse} = require('./database');
 
 // Destructuramos los modelos requeridos en las consultas que incluyen raw queries de SQL
 const { DB }  = require('./database');
@@ -425,53 +425,59 @@ router.patch('/:idRoute/donors/', async (req, res, next) => {
 //Asignar entrega operador
 router.post('/deliveries/assignedWarehouses/:idDriver', async (req, res, next) => {
     const {idDriver} = (req.params)
-    const {entregas} = (req.body)
+    const {entrega} = (req.body)
     let fechaDeHoy = moment.tz(moment(), 'America/Mexico_city').format('YYYY-MM-DD')
 
     try{
-        entregas.map(async (x,i)=>{
-            DB.query(
+        
+        let cA = moment.tz(moment(), 'America/Mexico_city').format('YYYY-MM-DD HH:mm:ss')
+
+        DB.query(
                 `
                 INSERT 
-                INTO warehousesAssignations (fecha, idDriver, idWarehouse)
-                VALUES ('${fechaDeHoy}', '${idDriver}', '${entregas[i].idWarehouse}');`,
+                INTO warehousesAssignations (fecha, idDriver, idWarehouse, createdAt)
+                VALUES ('${fechaDeHoy}', ${idDriver}, ${entrega.idWarehouse},'${cA}')`,
                 { type: QueryTypes.INSERT }
-            ).then(async (asignacion) => {
-                    (DB.query(
-                        `
-                        INSERT 
-                        INTO assignedQuantities (idWarehousesAssignation, idCategory , cantidad ) 
-                        VALUES (${asignacion[0]},${entregas[i].c1.idCategoria},${entregas[i].c1.cantidad});`,
-                        { type: QueryTypes.INSERT}
-                    ),
-                    DB.query(
-                        `
-                        INSERT 
-                        INTO assignedQuantities (idWarehousesAssignation, idCategory , cantidad ) 
-                        VALUES (${asignacion[0]},${entregas[i].c2.idCategoria},${entregas[i].c2.cantidad});`,
-                        { type: QueryTypes.INSERT}     
-                    ),
-                    DB.query(
-                        `
-                        INSERT 
-                        INTO assignedQuantities (idWarehousesAssignation, idCategory , cantidad ) 
-                        VALUES (${asignacion[0]},${entregas[i].c3.idCategoria},${entregas[i].c3.cantidad});`,
-                        { type: QueryTypes.INSERT}     
-                    ),
-                    DB.query(
-                        `
-                        INSERT 
-                        INTO assignedQuantities (idWarehousesAssignation, idCategory , cantidad ) 
-                        VALUES (${asignacion[0]},${entregas[i].c4.idCategoria},${entregas[i].c4.cantidad});`,
-                        { type: QueryTypes.INSERT}     
-                    )
-                    ).catch((err) =>{next(err)})
-                }).catch((err) =>{next(err)})
-            }
-        )
-        return res.status(201).json({entregas})
-    }catch(err) {
-        next(err);
+            )
+            .then((asignacion) => {
+                DB.query(
+                    `
+                    INSERT 
+                    INTO assignedQuantities (idWarehousesAssignation, idCategory , cantidad , createdAt) 
+                    VALUES (${asignacion[0]},${entrega.c1.idCategoria},${entrega.c1.cantidad},'${cA}')`,
+                    { type: QueryTypes.INSERT}
+                )
+                DB.query(
+                    `
+                    INSERT 
+                    INTO assignedQuantities (idWarehousesAssignation, idCategory , cantidad , createdAt)  
+                    VALUES (${asignacion[0]},${entrega.c2.idCategoria},${entrega.c2.cantidad},'${cA}')`,
+                    { type: QueryTypes.INSERT}     
+                )
+                DB.query(
+                    `
+                    INSERT 
+                    INTO assignedQuantities (idWarehousesAssignation, idCategory , cantidad , createdAt)  
+                    VALUES (${asignacion[0]},${entrega.c3.idCategoria},${entrega.c3.cantidad},'${cA}')`,
+                    { type: QueryTypes.INSERT}     
+                )
+                DB.query(
+                    `
+                    INSERT 
+                    INTO assignedQuantities (idWarehousesAssignation, idCategory , cantidad , createdAt)  
+                    VALUES (${asignacion[0]},${entrega.c4.idCategoria},${entrega.c4.cantidad},'${cA}')`,
+                    { type: QueryTypes.INSERT}     
+                )
+            })
+            .catch((err) =>{
+                next(err)
+            })        
+        return res.status(201).json({
+            entrega
+        })
+    }
+    catch(err){
+        next(err)
     }
 })
 
