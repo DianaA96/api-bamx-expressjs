@@ -15,10 +15,11 @@ router.get('/', async (req, res, next) => {
     if (req.query.name) {
         DB.query(
             `select
-            idUser,nombre,apellidoM,apellidoP,idDriver,idReceiver,idTrafficCoordinator
+            idUser,nombre,apellidoM,apellidoP,idDriver,idReceiver,idTrafficCoordinator,idAdmin
             from
             users u left join drivers o on u.idUser=o.idDriver
             left join receivers r on r.idReceiver=u.idUser
+            left join admins a on a.idAdmin = u.idUser
             left join trafficCoordinators t on u.idUser=t.idTrafficCoordinator where u.deletedAt is NULL
             and nombre LIKE "%${req.query.name}%" or u.deletedAt is NULL and apellidoP LIKE "%${req.query.name}%" or u.deletedAt is NULL and apellidoM LIKE "%${req.query.name}%" or u.deletedAt is NULL and idUser LIKE "%${req.query.name}%"`
             ,{nest:true,type: QueryTypes.SELECT}
@@ -43,9 +44,10 @@ router.get('/', async (req, res, next) => {
         let varConsultaRol = `and ${req.query.role} is not NULL`
         DB.query(
             `select
-            idUser,nombre,apellidoM,apellidoP,idDriver,idReceiver,idTrafficCoordinator
+            idUser,nombre,apellidoM,apellidoP,idDriver,idReceiver,idTrafficCoordinator,idAdmin
             from
             users u left join drivers o on u.idUser=o.idDriver
+            left join admins a on a.idAdmin = u.idUser
             left join receivers r on r.idReceiver=u.idUser
             left join trafficCoordinators t on u.idUser=t.idTrafficCoordinator where u.deletedAt is NULL
             ${req.query.role ? varConsultaRol: ""}
@@ -71,9 +73,10 @@ router.get('/', async (req, res, next) => {
     else {
         DB.query(
             `select
-            idUser,nombre,apellidoM,apellidoP,idDriver,idReceiver,idTrafficCoordinator
+            idUser,nombre,apellidoM,apellidoP,idDriver,idReceiver,idTrafficCoordinator, idAdmin
             from
             users u left join drivers o on u.idUser=o.idDriver
+            left join admins a on a.idAdmin = u.idUser
             left join receivers r on r.idReceiver=u.idUser
             left join trafficCoordinators t on u.idUser=t.idTrafficCoordinator where u.deletedAt is NULL`
             ,{nest:true,type: QueryTypes.SELECT}
@@ -654,7 +657,7 @@ router.post('/login', async (req, res, next)=> {
 
         if (!user) {
             return res.status(401).json({
-                data: 'Credenciales inválidas',
+                data: 'Usuario no encontrado',
             })
         }
 
