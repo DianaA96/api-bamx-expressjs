@@ -553,9 +553,10 @@ router.patch('/:idUser/receivers/', async (req, res, next) => {
 
 
 router.post('/login', async (req, res, next)=> {
-    const { body } = req;
+    const { body } = req.body;
     let roles={}
     let rol = "";
+    console.log(body)
 
     try{
         const user = await User.findOne({
@@ -566,7 +567,7 @@ router.post('/login', async (req, res, next)=> {
 
         if (!user) {
             return res.status(401).json({
-                data: 'Usuario no encontrado',
+                data: 'Credenciales inválidas',
             })
         }
 
@@ -578,7 +579,7 @@ router.post('/login', async (req, res, next)=> {
 
         if (!isMatch) {
             return res.status(401).json({
-                data:  user,
+                data:  'Credenciales inválidas'
             })
         }
 
@@ -608,6 +609,9 @@ router.post('/login', async (req, res, next)=> {
         if(listaRoles[0].idAdmin!=null){
             rol='admin'
         }
+
+        const idUser = user.idUser
+
         const payload = {
             idUser: user.idUser
         }
@@ -617,9 +621,8 @@ router.post('/login', async (req, res, next)=> {
             process.env.AUTH_SECRET,
             { expiresIn: 10800 },
             (err, token) => {
-                console.log(token)
                 return res.status(201).json({
-                    data: token,rol
+                    data: token,rol,idUser
                 });
             }
         )
