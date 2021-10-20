@@ -7,56 +7,6 @@ const {Collection} = require('./database');
 // Destructuramos los modelos requeridos en las consultas que incluyen raw queries de SQL
 const {DB}  = require('./database')
 
-//GET todos los donadores
-router.get('/', async (req, res, next) => {
-
-    if(req.query.route){
-        DB.query(
-            `select
-            *
-            from 
-            donors where deletedAt is NULL and idRoute = ${req.query.route}`,
-            { nest:true,type: QueryTypes.SELECT})
-        .then((listaDonadores) => {
-            if(listaDonadores!=''){
-                return res.status(200).json({
-                    listaDonadores
-                });
-            }else{
-                return res.status(404).json({
-                    name:"Not found",
-                    message: `No existen donadores asigndos a esa ruta`,
-                })
-            }
-        }).catch((err) => {
-            next(err);
-        })
-    }else{
-        DB.query(
-            `select
-            *
-            from 
-            donors where deletedAt is NULL`,
-            { nest:true,type: QueryTypes.SELECT})
-        .then((listaDonadores) => {
-            if(listaDonadores!=''){
-                return res.status(200).json({
-                    listaDonadores
-                });
-            }else{
-                return res.status(404).json({
-                    name:"Not found",
-                    message: `Aun no tienes donadores registrados`,
-                })
-            }
-        })
-        .catch((err) => {
-            next(err);
-            })
-        }
-    } 
-)
-
 // OBTIENE LA LISTA DE DONADORES PARA POBLAR EL ITEM DONADOR
 router.get('/donorsselect', ( req, res, next ) => {
     DB.query(
@@ -113,8 +63,9 @@ router.get('/:idDonor', async (req, res, next) => {
 
 // POST donador
 router.post('/', async (req, res, next) => {
-    console.log(req.body)
+
     const {donor} = req.body
+
     try {
         let donador = await Donor.findOne({
             where: {determinante: donor.determinante}
@@ -135,12 +86,10 @@ router.post('/', async (req, res, next) => {
                 message: `Ya existe un donador con estos datos `,
             })
         }
-        console.log(donor)
         await Donor.create(donor).then((x) => {
             return res.status(201).json({x})
         })
-    } catch(err) 
-    {
+    } catch(err){
         next(err);
     }
     }
@@ -202,14 +151,14 @@ router.patch('/collected/collections', async(req, res, next) => {
     
     const { thisCollection: idCollection } = req.query
     const { collected, collections } = req.body
-    console.log(collected)
 
     try {
         let recoleccion = await Collection.findByPk(idCollection)
         
         if(recoleccion) {
+
             await recoleccion.update(collections)
-            console.log(recoleccion);
+            
             if(collected.rec1){
                 await CollectedQuantity.create(collected.rec1)
             }
@@ -260,6 +209,56 @@ router.delete('/:idDonor', async (req, res, next)=>{
         next(err);
     }
 }
+)
+
+//GET todos los donadores
+router.get('/', async (req, res, next) => {
+
+    if(req.query.route){
+        DB.query(
+            `select
+            *
+            from 
+            donors where deletedAt is NULL and idRoute = ${req.query.route}`,
+            { nest:true,type: QueryTypes.SELECT})
+        .then((listaDonadores) => {
+            if(listaDonadores!=''){
+                return res.status(200).json({
+                    listaDonadores
+                });
+            }else{
+                return res.status(404).json({
+                    name:"Not found",
+                    message: `No existen donadores asigndos a esa ruta`,
+                })
+            }
+        }).catch((err) => {
+            next(err);
+        })
+    }else{
+        DB.query(
+            `select
+            *
+            from 
+            donors where deletedAt is NULL`,
+            { nest:true,type: QueryTypes.SELECT})
+        .then((listaDonadores) => {
+            if(listaDonadores!=''){
+                return res.status(200).json({
+                    listaDonadores
+                });
+            }else{
+                return res.status(404).json({
+                    name:"Not found",
+                    message: `Aun no tienes donadores registrados`,
+                })
+            }
+        })
+        .catch((err) => {
+            next(err);
+            })
+        }
+    } 
 )
 
 module.exports = router
