@@ -197,8 +197,7 @@ router.get('/enroutedriver/:idDriver', async(req, res, next) =>{
             users u join drivers o on u.idUser=o.idDriver
             join collections c using(idDriver)
             where 
-            fechaRecoleccion is null
-            and idDriver = ${req.params.idDriver}`, 
+            idDriver = ${req.params.idDriver}`, 
             { 
                 type: QueryTypes.SELECT
             }
@@ -300,32 +299,34 @@ router.get('/collectedquantitiespernote/:idCollection', async(req, res, next) =>
 // GET asignar rutas de entrega
 router.get('/assigndeliveries', async(req, res, next) =>{
 
+    let fechaDeHoy = moment.tz(moment(), 'America/Mexico_city').format('YYYY-MM-DD')
+
     try {
-        let fechaDeHoy = new Date()
         // Raw SQL Query
         let driverData = await DB.query(
             `
             select
-            idDriver, nombreUsuario,u.nombre as operador,apellidoP,apellidoM,ca.nombre as cosa,sum(cantidad) as cantidad
+            c.idDriver, nombreUsuario,u.nombre as operador,apellidoP,apellidoM,ca.nombre as cosa,sum(cantidad) as cantidad
             from
             BAMX.users u join BAMX.drivers o on u.idUser=o.idDriver
             join BAMX.collections c using(idDriver)
             join collectedQuantities using(idCollection)
             join categories ca using(idCategory)
+            left join warehousesAssignations wa on wa.idDriver=c.idDriver
             where 
-            date(fechaAsignacion) = '${(fechaDeHoy.toISOString().slice(0, 19).replace('T', ' ')).slice(0, 10)}' and idDriver in
+            wa.idDriver is null and date(fechaAsignacion) = '${fechaDeHoy}' and (date(fecha)='${fechaDeHoy}' or date(fecha) is null) and c.idDriver in
             (select
             idDriver
             from
             BAMX.users u join BAMX.drivers o on u.idUser=o.idDriver
             join BAMX.collections c using(idDriver)
             where 
-            date(fechaAsignacion) = '${(fechaDeHoy.toISOString().slice(0, 19).replace('T', ' ')).slice(0, 10)}'
+            date(fechaAsignacion) = '${fechaDeHoy}'
             group by idDriver
             having
             sum(recolectado=0)=0)
             group by idCategory,idDriver
-            order by idDriver            
+            order by idDriver      
             `,
             { type: QueryTypes.SELECT })
                     
@@ -377,7 +378,139 @@ router.get('/assigndeliveries', async(req, res, next) =>{
                 from
                 collections
                 where
-                date(fechaAsignacion)='${(fechaDeHoy.toISOString().slice(0, 19).replace('T', ' ')).slice(0, 10)}' and idDriver=${idChofer}
+                date(fechaAsignacion)='${fechaDeHoy}' and idDriver=${idChofer}
+                order by fechaAsignacion desc
+                limit 1`,
+                { type: QueryTypes.SELECT })
+
+                chofer.horaUltimaRecoleccion = horaUltimaRecoleccion[0].horaUltimaRecoleccion
+
+                choferes.push(chofer)
+                chofer = {
+                    idDriver: '',
+                    operador: '',
+                    nombreUsuario: '',
+                    apellidoP: '',
+                    apellidoM: '',
+                    horaUltimaRecoleccion: '',
+                    recolecciones: {
+                        pan: '',
+                        fruta: '',
+                        abarrote: '',
+                        noComestible:''
+                    }
+                }
+
+            }
+        }
+
+        if(driverData.length > 0){
+            return res.status(200).json({
+                choferes
+            })
+        } else {
+            return res.status(400).json({
+                name: "Not found",
+                message: "No hay registros coincidentes"
+            })
+        }
+
+    } catch(err) 
+    {
+        next(err);
+    }
+}
+)
+
+// GET asignar rutas de entrega header. AÑADIR UNIDAD Y NÚMERO TOTAL DE RECOLECCIONES
+router.get('/assignspecificdeliveries/:idDriver', async(req, res, next) =>{
+
+    let { idDriver } = req.params
+
+    try {
+        let fechaDeHoy = moment.tz(moment(), 'America/Mexico_city').format('YYYY-MM-DD')
+        // Raw SQL Query
+        let driverData = await DB.query(
+            `
+            select
+            c.idDriver, nombreUsuario,u.nombre as operador,apellidoP,apellidoM,ca.nombre as cosa,sum(cantidad) as cantidad ,count(idCollection) as recoleccionesHechas,modelo as numUnidad
+            from
+            BAMX.users u join BAMX.drivers o on u.idUser=o.idDriver
+            join BAMX.collections c using(idDriver)
+            join collectedQuantities using(idCollection)
+            join categories ca using(idCategory)
+            left join warehousesAssignations wa on wa.idDriver=c.idDriver
+            join vehicles v on v.idVehicle=c.idVehicle
+            where 
+             wa.idDriver is null and date(fechaAsignacion) = '${fechaDeHoy}' and (date(fecha)='${fechaDeHoy}' or date(fecha) is null) and c.idDriver = ${idDriver} and c.idDriver in
+            (select
+            idDriver
+            from
+            BAMX.users u join BAMX.drivers o on u.idUser=o.idDriver
+            join BAMX.collections c using(idDriver)
+            where 
+            date(fechaAsignacion) = '${fechaDeHoy}'
+            group by idDriver
+            having
+            sum(recolectado=0)=0)
+            group by idCategory,idDriver
+            order by idDriver         
+            `,
+            { type: QueryTypes.SELECT })
+                    
+        let idChofer = -1
+        let chofer = {
+            idDriver: '',
+            operador: '',
+            nombreUsuario: '',
+            apellidoP: '',
+            apellidoM: '',
+            horaUltimaRecoleccion: '',
+            recoleccionesHechas: '',
+            numUnidad: '',
+            recolecciones: {
+                pan: '',
+                fruta: '',
+                abarrote: '',
+                noComestible:''
+            }
+        }
+
+        let choferes = []
+        
+        for( let y = 0; y < driverData.length; y++) {
+            if (driverData[y].idDriver !== idChofer){
+                idChofer = driverData[y].idDriver
+                chofer.idDriver = driverData[y].idDriver
+                chofer.operador = driverData[y].operador
+                chofer.nombreUsuario = driverData[y].nombreUsuario
+                chofer.apellidoP =  driverData[y].apellidoP
+                chofer.apellidoM =  driverData[y].apellidoM
+                chofer.recoleccionesHechas =  driverData[y].recoleccionesHechas
+                chofer.numUnidad =  driverData[y].numUnidad
+
+                for( let p = 0; p < driverData.length; p++) {
+                    if (driverData[p].cosa === 'Pan' && driverData[p].idDriver === idChofer) {
+                        chofer.recolecciones.pan = driverData[p].cantidad
+                    }
+                    else if (driverData[p].cosa === 'Frutas y verduras' && driverData[p].idDriver === idChofer) {
+                        chofer.recolecciones.fruta = driverData[p].cantidad
+                    }
+                    else if (driverData[p].cosa === 'No comestible' && driverData[p].idDriver === idChofer) {
+                        chofer.recolecciones.noComestible = driverData[p].cantidad
+                    }
+                    else if (driverData[p].cosa === 'Abarrote' && driverData[p].idDriver === idChofer) {
+                        chofer.recolecciones.abarrote = driverData[p].cantidad
+                    }
+                } 
+                
+                let horaUltimaRecoleccion = await DB.query(`
+                select
+                time(fechaAsignacion) as horaUltimaRecoleccion
+                from
+                collections
+                where
+                date(fechaAsignacion)='${fechaDeHoy}' and idDriver=${idChofer}
                 order by fechaAsignacion desc
                 limit 1`,
                 { type: QueryTypes.SELECT })
