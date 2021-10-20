@@ -26,6 +26,14 @@ router.get('/extradonors/vehicles', async (req, res, next) => {
             }}
         )
 
+        let ordinaryDonors = await Donor.findAll(
+            {
+                attributes: [["idDonor", "value"], ["nombre", "label"]],
+                where: {
+                    tipo: "Recurrente"
+            }}
+        )
+
         let unidades = await Vehicle.findAll(
             {
                 attributes: [["idVehicle", "value"], ["modelo", "label"]],
@@ -34,7 +42,7 @@ router.get('/extradonors/vehicles', async (req, res, next) => {
 
         if(extraDonors || rutas || unidades) {
             return res.status(200).json(
-                 {rutas, extraDonors, unidades})
+                 {rutas, extraDonors, ordinaryDonors, unidades})
         } else {
             return res.status(404).json({
                 name: "Not Found",
@@ -45,6 +53,7 @@ router.get('/extradonors/vehicles', async (req, res, next) => {
         next(err)
         }
 })
+
 
 //obtener ruta especifica
 router.get('/:idRoute', async (req, res, next) => {
