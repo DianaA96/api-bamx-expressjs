@@ -134,23 +134,24 @@ app.get('/assigneddeliveries/:idReceiver', async (req, res, next) => {
         // Raw SQL Query
         let driverData = await DB.query(
             `select
-            distinct o.idDriver,u.nombre as operador,u.apellidoP,u.apellidoM,cantidad as CantidadaEntregar,categories.nombre as categoria,modelo,u.nombreUsuario
+            distinct o.idDriver,u.nombre as operador,u.apellidoP,u.apellidoM, cantidad as CantidadaEntregar,categories.nombre as categoria,modelo,u.nombreUsuario, wa.idWarehousesAssignation
             from
             users u join drivers o on u.idUser=o.idDriver
             join warehousesAssignations wa using(idDriver)
-            join assignedQuantities using(idWarehousesAssignation)
+            join assignedQuantities aq on aq.idWarehousesAssignation=wa.idWarehousesAssignation
             join categories using(idCategory)
             join collections c on c.idDriver=o.idDriver
             join vehicles using(idVehicle)
             join warehouses w on w.idWarehouse=wa.idWarehouse
-            where date(fecha) = '${fechaDeHoy}' and
-            idReceiver=${idReceiver}
-            `,
+            left join deliveries d on d.idWarehousesAssignation=wa.idWarehousesAssignation
+            where date(fecha) = '${fechaDeHoy}'' and
+            w.idReceiver=${idReceiver} and idDelivery is null`,
             { type: QueryTypes.SELECT })
         
         let idChofer = -1
         let data = [ ]
         let auxChofer = {
+            idWarehousesAssignation:'',
             operador : '',
             apellidoP : '',
             apellidoM : '',
@@ -166,6 +167,7 @@ app.get('/assigneddeliveries/:idReceiver', async (req, res, next) => {
         
             if(idChofer !== driverData[i].idDriver) {
                 idChofer = driverData[i].idDriver
+                auxChofer.idWarehousesAssignation = driverData[i].idWarehousesAssignation
                 auxChofer.operador = driverData[i].operador
                 auxChofer.apellidoP = driverData[i].apellidoP
                 auxChofer.apellidoM = driverData[i].apellidoM
