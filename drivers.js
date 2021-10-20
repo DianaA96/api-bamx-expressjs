@@ -19,14 +19,12 @@ router.get('/', async (req, res, next) => {
         u.nombre,apellidoM,apellidoP,nombreUsuario,o.idDriver
         from
         users u join drivers o on u.idUser=o.idDriver
-        where
-        o.idDriver in
-        (select 
-        o.idDriver
-        from 
-        drivers o left join collections c on o.idDriver=c.idDriver
-        where c.idDriver is null or ((date(fechaRecoleccion) = '${fechaDeHoy}') and date(fechaRecoleccion) is not null))
-        and nombre LIKE "%${req.query.name}%" or u.deletedAt is NULL and apellidoP LIKE "%${req.query.name}%" or u.deletedAt is NULL and apellidoM LIKE "%${req.query.name}%" or u.deletedAt is NULL and nombreUsuario LIKE "%${req.query.name}%"
+        where nombre LIKE "%${req.query.name}%" or 
+        u.deletedAt is NULL 
+        and apellidoP LIKE "%${req.query.name}%" 
+        or u.deletedAt is NULL 
+        and apellidoM LIKE "%${req.query.name}%" 
+        or u.deletedAt is NULL and nombreUsuario LIKE "%${req.query.name}%"        
         `, { type: Sequelize.QueryTypes.SELECT }
         )
         .then((listaUsuarios) => {
@@ -52,13 +50,6 @@ router.get('/', async (req, res, next) => {
             u.nombre,apellidoM,apellidoP,nombreUsuario,o.idDriver
             from
             users u join drivers o on u.idUser=o.idDriver
-            where
-            o.idDriver in
-            (select 
-            o.idDriver
-            from 
-            drivers o left join collections c on o.idDriver=c.idDriver
-            where c.idDriver is null or ((date(fechaRecoleccion) = '${fechaDeHoy}') and date(fechaRecoleccion) is not null))
             order by nombre ${req.query.order};
             `, { type: Sequelize.QueryTypes.SELECT }
             )
@@ -85,13 +76,6 @@ router.get('/', async (req, res, next) => {
             u.nombre,apellidoM,apellidoP,nombreUsuario,o.idDriver
             from
             users u join drivers o on u.idUser=o.idDriver
-            where
-            o.idDriver in
-            (select 
-            o.idDriver
-            from 
-            drivers o left join collections c on o.idDriver=c.idDriver
-            where c.idDriver is null or ((date(fechaRecoleccion) = '${fechaDeHoy}') and date(fechaRecoleccion) is not null))
             `, { type: Sequelize.QueryTypes.SELECT }
             )
             .then((listaUsuarios) => {
@@ -374,12 +358,12 @@ router.get('/assigndeliveries', async(req, res, next) =>{
                 
                 let horaUltimaRecoleccion = await DB.query(`
                 select
-                time(fechaAsignacion) as horaUltimaRecoleccion
+                time(fechaRecoleccion) as horaUltimaRecoleccion
                 from
                 collections
                 where
-                date(fechaAsignacion)='${fechaDeHoy}' and idDriver=${idChofer}
-                order by fechaAsignacion desc
+                date(fechaRecoleccion)='${fechaDeHoy}' and idDriver=${idChofer}
+                order by fechaRecoleccion desc
                 limit 1`,
                 { type: QueryTypes.SELECT })
 
@@ -506,12 +490,12 @@ router.get('/assignspecificdeliveries/:idDriver', async(req, res, next) =>{
                 
                 let horaUltimaRecoleccion = await DB.query(`
                 select
-                time(fechaAsignacion) as horaUltimaRecoleccion
+                time(fechaRecoleccion) as horaUltimaRecoleccion
                 from
                 collections
                 where
-                date(fechaAsignacion)='${fechaDeHoy}' and idDriver=${idChofer}
-                order by fechaAsignacion desc
+                date(fechaRecoleccion)='${fechaDeHoy}' and idDriver=${idChofer}
+                order by fechaRecoleccion desc
                 limit 1`,
                 { type: QueryTypes.SELECT })
 
