@@ -92,9 +92,7 @@ app.get('/collections/done/driver', (req, res, next) => {
     }
 )
 
-
 // FALTA IMPLEMENTAR LA FECHA DE HOY
-
 //  Confirmación nota operador
 app.get('/collections', (req, res, next) => {
 

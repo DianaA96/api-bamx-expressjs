@@ -203,7 +203,6 @@ router.get('/extradonors/vehicles', async (req, res, next) => {
         }
 })
 
-
 //obtener ruta especifica
 router.get('/:idRoute', async (req, res, next) => {
     const {idRoute} = req.params

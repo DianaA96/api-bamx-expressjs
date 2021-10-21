@@ -17,7 +17,7 @@ router.get('/', async (req, res, next) => {
             from 
             donors where deletedAt is NULL and idRoute = ${req.query.route}`,
             { nest:true,type: QueryTypes.SELECT})
-        .then((listaDonadores) => {
+            .then((listaDonadores) => {
             if(listaDonadores!=''){
                 return res.status(200).json({
                     listaDonadores
@@ -25,19 +25,76 @@ router.get('/', async (req, res, next) => {
             }else{
                 return res.status(404).json({
                     name:"Not found",
-                    message: `No existen donadores asigndos a esa ruta`,
+                    message: `Aun no tienes donadores registrados`,
                 })
             }
-        }).catch((err) => {
+        })
+        .catch((err) => {
             next(err);
         })
-    }else{
+    } else {
+        if (req.query.name) {
+            DB.query(
+                `select
+                *
+                from 
+                donors where deletedAt is NULL and nombre LIKE "%${req.query.name}%"`
+                ,{nest:true,type: QueryTypes.SELECT}
+            ).then((listaDonadores) => {
+                if(listaDonadores!=''){
+                    return res.status(200).json({
+                        listaDonadores
+                    });
+                }else{
+                    return res.status(404).json({
+                        name:"Not found",
+                        message: `Aun no tienes donadores registrados`,
+                    })
+                }
+            })
+            .catch((err) => {
+                next(err);
+            })
+        } 
+
+        else if (req.query.type || req.query.order) {
+            function capitalizeFirstLetter(string) {
+                return string.charAt(0).toUpperCase() + string.slice(1);
+            }
+            
+            let varConsultaTipo = `and tipo = "${capitalizeFirstLetter(req.query.type)}"`
+
+            DB.query(
+                `select
+                *
+                from 
+                donors where deletedAt is NULL
+                ${req.query.type ? varConsultaTipo: ""}
+                order by nombre ${req.query.order}`
+                ,{nest:true,type: QueryTypes.SELECT}
+            ).then((listaDonadores) => {
+                if(listaDonadores!=''){
+                    return res.status(200).json({
+                        listaDonadores
+                    });
+                }else{
+                    return res.status(404).json({
+                        name:"Not found",
+                        message: `Aun no tienes donadores registrados`,
+                    })
+                }
+            })
+            .catch((err) => {
+                next(err);
+            })
+        }
+        else {
         DB.query(
             `select
             *
             from 
             donors where deletedAt is NULL`,
-            { nest:true,type: QueryTypes.SELECT})
+            { nest:true,type: QueryTypes.SELECT })
         .then((listaDonadores) => {
             if(listaDonadores!=''){
                 return res.status(200).json({
@@ -53,6 +110,7 @@ router.get('/', async (req, res, next) => {
         .catch((err) => {
             next(err);
             })
+        }
         }
     } 
 )

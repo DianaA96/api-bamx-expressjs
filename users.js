@@ -641,7 +641,6 @@ router.patch('/:idUser/receivers/', async (req, res, next) => {
     }
 )
 
-
 router.post('/login', async (req, res, next)=> {
     const { body } = req.body;
     let roles={}
