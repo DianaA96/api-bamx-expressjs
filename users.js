@@ -10,6 +10,94 @@ const {User, Driver} = require('./database');
 // Destructuramos los modelos requeridos en las consultas que incluyen raw queries de SQL
 const { DB }  = require('./database')
 
+//obtiene todo los usuarios **CHECAR EL SELECT - ESTE ENDPOINT DEBERÍA IR AL FINAL DEL ARCHIVO PORQUE ES EL ENDPOINT MÁS GENERAL :)
+router.get('/', async (req, res, next) => {
+    if (req.query.name) {
+        DB.query(
+            `select
+            idUser,nombre,apellidoM,apellidoP,idDriver,idReceiver,idTrafficCoordinator,idAdmin
+            from
+            users u left join drivers o on u.idUser=o.idDriver
+            left join receivers r on r.idReceiver=u.idUser
+            left join admins a on a.idAdmin = u.idUser
+            left join trafficCoordinators t on u.idUser=t.idTrafficCoordinator where u.deletedAt is NULL
+            and nombre LIKE "%${req.query.name}%" or u.deletedAt is NULL and apellidoP LIKE "%${req.query.name}%" or u.deletedAt is NULL and apellidoM LIKE "%${req.query.name}%" or u.deletedAt is NULL and idUser LIKE "%${req.query.name}%"`
+            ,{nest:true,type: QueryTypes.SELECT}
+        ).then((listaUsuarios) => {
+            if(listaUsuarios!=''){
+                return res.status(200).json({
+                    listaUsuarios
+                });
+            }else{
+                return res.status(404).json({
+                    name: 'Not Found',
+                    message: 'No existen usuarios registrados'
+                })
+            }
+        })
+        .catch((err) => {
+            next(err);
+        })
+    } 
+
+    else if (req.query.role || req.query.order) {
+        let varConsultaRol = `and ${req.query.role} is not NULL`
+        DB.query(
+            `select
+            idUser,nombre,apellidoM,apellidoP,idDriver,idReceiver,idTrafficCoordinator,idAdmin
+            from
+            users u left join drivers o on u.idUser=o.idDriver
+            left join admins a on a.idAdmin = u.idUser
+            left join receivers r on r.idReceiver=u.idUser
+            left join trafficCoordinators t on u.idUser=t.idTrafficCoordinator where u.deletedAt is NULL
+            ${req.query.role ? varConsultaRol: ""}
+            order by nombre ${req.query.order}`
+            ,{nest:true,type: QueryTypes.SELECT}
+        ).then((listaUsuarios) => {
+            if(listaUsuarios!=''){
+                return res.status(200).json({
+                    listaUsuarios
+                });
+            }else{
+                return res.status(404).json({
+                    name: 'Not Found',
+                    message: 'No existen usuarios registrados'
+                })
+            }
+        })
+        .catch((err) => {
+            next(err);
+        })
+    }
+
+    else {
+        DB.query(
+            `select
+            idUser,nombre,apellidoM,apellidoP,idDriver,idReceiver,idTrafficCoordinator, idAdmin
+            from
+            users u left join drivers o on u.idUser=o.idDriver
+            left join admins a on a.idAdmin = u.idUser
+            left join receivers r on r.idReceiver=u.idUser
+            left join trafficCoordinators t on u.idUser=t.idTrafficCoordinator where u.deletedAt is NULL`
+            ,{nest:true,type: QueryTypes.SELECT}
+        ).then((listaUsuarios) => {
+            if(listaUsuarios!=''){
+                return res.status(200).json({
+                    listaUsuarios
+                });
+            }else{
+                return res.status(404).json({
+                    name: 'Not Found',
+                    message: 'No existen usuarios registrados'
+                })
+            }
+        })
+        .catch((err) => {
+            next(err);
+        })
+    }
+})
+
 //obtiene a los receptores
 router.get('/receivers', async (req, res, next) => {
     DB.query(
@@ -567,7 +655,7 @@ router.post('/login', async (req, res, next)=> {
 
         if (!user) {
             return res.status(401).json({
-                data: 'Credenciales inválidas',
+                data: 'Usuario no encontrado',
             })
         }
 
