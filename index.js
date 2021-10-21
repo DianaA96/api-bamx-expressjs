@@ -142,7 +142,7 @@ app.get('/assigneddeliveries/:idReceiver', async (req, res, next) => {
             join vehicles using(idVehicle)
             join warehouses w on w.idWarehouse=wa.idWarehouse
             left join deliveries d on d.idWarehousesAssignation=wa.idWarehousesAssignation
-            where date(fecha) = '${fechaDeHoy}'' and
+            where date(fecha) = '${fechaDeHoy}' and
             w.idReceiver=${idReceiver} and idDelivery is null`,
             { type: QueryTypes.SELECT })
         

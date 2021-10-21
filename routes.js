@@ -389,7 +389,7 @@ router.patch('/:idRoute/donors/', async (req, res, next) => {
         if(rutae){
             let ocupado = await Route.findOne({where:{nombre:route.nombre}}) 
 
-            if(ocupado===null){
+            if(ocupado===null|| ocupado===undefined){
                 ocupado = rutae
             }
 
