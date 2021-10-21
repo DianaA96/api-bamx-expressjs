@@ -153,25 +153,34 @@ router.patch('/:idDonor', async (req, res, next) => {
     const { donor } = req.body;
     try{
         let a =await Donor.findByPk(idDonor)
-        
-        if(a) {
-            await a.update(donor)         
-            let {
-                nombre,
-                determinante,
-                cp,
-                estado,
-                municipio,
-                colonia,
-                calle,
-                numExterior,
-                telefono,
-                correo,
-                tipo
-            } = a
+        let donadore = await Donor.findOne({ where:{determinante:donor.determinante}})
+        if(donadore === undefined || donadore === null){
+            donadore = a
+        }
 
-            return res.status(200).json({
-                usuarioActualizado: {
+        let dir = await Donor.findOne(
+            {where:{cp: donor.cp}},
+            {where:{estado: donor.estado}},
+            {where: {municipio: donor.municipio}},
+            {where: {colonia: donor.colonia}},
+            {where:{calle: donor.calle}},
+            {where:{numExterior: donor.numExterior}}
+        )
+        if(dir === undefined || dir === null){
+            dir = a
+        }
+
+        if((donadore.idDonor!=a.idDonor)||(dir.idDonor!=a.idDonor)){
+
+            return res.status(400).json({
+                name: "Bad request",
+                message: "Los datos que intentas asignar ya pertenecen a otro usuario u operador"
+            })
+
+        }else{
+            if(a) {
+                await a.update(donor)         
+                let {
                     nombre,
                     determinante,
                     cp,
@@ -183,14 +192,30 @@ router.patch('/:idDonor', async (req, res, next) => {
                     telefono,
                     correo,
                     tipo
-                },
-            })
-        } else {
-            return res.status(404).json({
-                name: "Not Found",
-                message: "El donador que intentas actualizar no existe"
+                } = a
+    
+                return res.status(200).json({
+                    usuarioActualizado: {
+                        nombre,
+                        determinante,
+                        cp,
+                        estado,
+                        municipio,
+                        colonia,
+                        calle,
+                        numExterior,
+                        telefono,
+                        correo,
+                        tipo
+                    },
                 })
-            }
+            } else {
+                return res.status(404).json({
+                    name: "Not Found",
+                    message: "El donador que intentas actualizar no existe"
+                    })
+                }
+        }
         } catch(err) {
             next(err);
         }

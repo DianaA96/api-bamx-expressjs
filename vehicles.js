@@ -75,7 +75,6 @@ router.post('/', async (req, res, next) => {
 //patch troka
 //Actualiza una ruta
 router.patch('/:idVehicle/', async (req, res, next) => {
-    console.log(req.body)
     const {idVehicle}= req.params
     const {vehicle}=req.body
     try {
@@ -86,8 +85,14 @@ router.patch('/:idVehicle/', async (req, res, next) => {
             })
         }else{
             let placa = await Vehicle.findOne({where: {placa: vehicle.placa}})
+            if(placa=== undefined || placa=== null){
+                placa= unidad
+            }
             let poliza = await Vehicle.findOne({where: {poliza: vehicle.poliza}})
-            if(placa||poliza){
+            if(poliza=== undefined || poliza=== null){
+                poliza= unidad
+            }
+            if((placa.idVehicle!=idVehicle)||(poliza.idVehicle!=idVehicle)){
                 return res.status(400).json({
                     message: "Ya existe una unidad con esa placa o poliza",
                 })
