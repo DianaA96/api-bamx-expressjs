@@ -316,7 +316,7 @@ router.post('/drivers/', async (req, res, next) => {
             })
             
         })     
-        let {nombreUsuairo, nombre, apellidoP, apellidoM, email, telefono, licencia,vencimientoLicencia, idDriver} = usuarioOperador
+        let {nombreUsuario, nombre, apellidoP, apellidoM, email, telefono, licencia,vencimientoLicencia, idDriver} = usuarioOperador
         const payload = {
             idUser: usuario.idUser,
         }
@@ -369,7 +369,7 @@ router.post('/receivers/', async (req, res, next) => {
             })       
             await c.update({idReceiver: d.idUser})
         }
-        let {nombreUsuairo, nombre, apellidoP, apellidoM, email, telefono} = usuarioReceptor
+        let {nombreUsuario, nombre, apellidoP, apellidoM, email, telefono} = usuarioReceptor
         const payload = {
             idUser: usuario.idUser,
         }
@@ -395,30 +395,34 @@ router.patch('/:idUser/drivers/', async (req, res, next) => {
     const { idUser } = req.params;
     const { user, driver } = req.body;
     try{
+
         let usuarioe = await User.findByPk(idUser)//obtiene los datos del operador seleccionado
         
         //coincidendia de nombreUsuario
         let ocupado = await User.findOne({where:{nombreUsuario:user.nombreUsuario}}) 
-        if(ocupado==null){
+        if(ocupado=== undefined|| ocupado===null){
             ocupado = usuarioe
         }
+        
         //coincidencia de licencia
         let licenciaExiste = await Driver.findOne({where:{licencia:driver.licencia}})
-        if(licenciaExiste==null){
+        if(licenciaExiste === undefined|| licenciaExiste === null){
             licenciaExiste = usuarioe
         }
+
         //coincidencia de email
         let correoe = await User.findOne({where:{email:user.email}})
-        if(correoe==null){
+        if(correoe === undefined || correoe === null){
             correoe = usuarioe
         }
+
         //coincidencia de telefono
         let tel = await User.findOne({where:{telefono:user.telefono}})
-        if(tel==null){
+        if(tel === undefined || tel === null){
             tel = usuarioe
         }
-
-        if((ocupado.idUser!=usuarioe.idUser)||(licenciaExiste.idUser!=usuarioe.idUser)||(tel.idUser!=usuarioe.idUser)||(correoe.idUser!=usuarioe.idUser)){//verifica si la licencia, nombreUsuario,telefono o email pertenecen a otro usuario 
+        
+        if((ocupado.idUser!=usuarioe.idUser)||(licenciaExiste.idDriver!=usuarioe.idUser)||(tel.idUser!=usuarioe.idUser)||(correoe.idUser!=usuarioe.idUser)){//verifica si la licencia, nombreUsuario,telefono o email pertenecen a otro usuario 
             return res.status(400).json({
                 name: "Bad request",
                 message: "Los datos que intentas asignar ya pertenecen a otro usuario u operador"
@@ -483,17 +487,19 @@ router.patch('/:idUser/trafficCoordinators/', async (req, res, next) => {
         
         //coincidendia de nombreUsuario
         let ocupado = await User.findOne({where:{nombreUsuario:user.nombreUsuario}}) 
-        if(ocupado==null){
+        if(ocupado=== undefined|| ocupado===null){
             ocupado = usuarioe
         }
+    
         //coincidencia de email
         let correoe = await User.findOne({where:{email:user.email}})
-        if(correoe==null){
+        if(correoe === undefined || correoe === null){
             correoe = usuarioe
         }
+
         //coincidencia de telefono
         let tel = await User.findOne({where:{telefono:user.telefono}})
-        if(tel==null){
+        if(tel === undefined || tel === null){
             tel = usuarioe
         }
 
@@ -561,17 +567,19 @@ router.patch('/:idUser/receivers/', async (req, res, next) => {
         
         //coincidendia de nombreUsuario
         let ocupado = await User.findOne({where:{nombreUsuario:user.nombreUsuario}}) 
-        if(ocupado==null){
+        if(ocupado=== undefined|| ocupado===null){
             ocupado = usuarioe
         }
+
         //coincidencia de email
         let correoe = await User.findOne({where:{email:user.email}})
-        if(correoe==null){
+        if(correoe === undefined || correoe === null){
             correoe = usuarioe
         }
+
         //coincidencia de telefono
         let tel = await User.findOne({where:{telefono:user.telefono}})
-        if(tel==null){
+        if(tel === undefined || tel === null){
             tel = usuarioe
         }
 
