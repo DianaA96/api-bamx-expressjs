@@ -559,7 +559,8 @@ router.patch('/:idUser/trafficCoordinators/', async (req, res, next) => {
 router.patch('/:idUser/receivers/', async (req, res, next) => {
 
     const { idUser } = req.params;
-    const { user, warehouses } = req.body;
+    const { user } = req.body;
+    const { receiver } = req.body;
      
     try{
 
@@ -591,7 +592,7 @@ router.patch('/:idUser/receivers/', async (req, res, next) => {
         }else{
             let usuario = await User.findByPk(idUser)
             let receptor = await Receiver.findByPk(idUser)
-            let bodega = await Warehouse.findByPk(warehouses.idWarehouse)
+            let bodega = await Warehouse.findByPk(receiver.idWarehouse)
            
 
             if(usuario && receptor && bodega) {
@@ -610,7 +611,7 @@ router.patch('/:idUser/receivers/', async (req, res, next) => {
                 `
                 UPDATE warehouses 
                 SET idReceiver= ${idUser}
-                WHERE idWarehouse=${bodega.idWarehouse}`,
+                WHERE idWarehouse=${receiver.idWarehouse}`,
                 {
                     type: QueryTypes.UPDATE
                 }).then((receptoract) => {
@@ -648,7 +649,6 @@ router.patch('/:idUser/receivers/', async (req, res, next) => {
         }
     }
 )
-
 
 router.post('/login', async (req, res, next)=> {
     const { body } = req.body;

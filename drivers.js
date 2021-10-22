@@ -96,40 +96,6 @@ router.get('/', async (req, res, next) => {
     }
 })
 
-/* // GET bodegas asignadas
-router.get('/assignedWarehouses/:idDriver', async (req, res, next) => {
-    const { idDriver } = req.params
-    let fechaDeHoy = new Date()
-    DB.query(
-        `select
-        u.nombre,w.nombre,cp,municipio,colonia,calle,numExterior,cantidad
-        from users u join drivers o on u.idUser=o.idDriver
-        join warehousesAssignations wa using(idDriver)
-        join warehouses w using(idWarehouse)
-        join assignedQuantities aq on aq.idWarehousesAssignation=wa.idWarehousesAssignation
-        where fecha="${(fechaDeHoy.toISOString().slice(0, 19).replace('T', ' ')).slice(0, 10)}" and idDriver=:idDriver`,
-        { 
-            type: QueryTypes.SELECT
-        }
-    )
-    .then((listaEntregas) => {
-        if(listaEntregas!=''){
-            return res.status(200).json({
-                listaEntregas
-            });
-        }else{
-            return res.status(400).json({
-                name: "Not found",
-                message: "Este operador aun no tiene una ruta de entregas asignada"
-            })
-        }
-    })
-    .catch((err) => {
-        next(err);
-    })
-}
-) */
-
 // GET operadores GESTIÓN DE OPERADORES EN RUTA // AÑADIR LA FECHA COMO PARÁMETRO DE BÚSQUEDA
 // obtiene el nombre, nombreUsuario, idDriver y número de recolecciones COMPLETAS asignadas el día de hoy y ASIGNADAS el día de hoy
 router.get('/enroutedrivers', async(req, res, next) =>{
